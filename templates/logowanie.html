@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Logowanie</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/logowanie.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <span class="icon">✈️</span> <a href="index.html">SkyPort</a>
+        </div>
+        <nav class="nav-links">
+            <a href="/loty">Loty</a>
+            <a href="/parking">Parking</a>
+            <a href="/mapy">Mapy Terminali</a>
+            <a href="/bezpieczenstwo">Informacje o Bezpieczeństwie</a>
+        </nav>
+        <div class="nav-actions">
+            {% if user %}
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+
+            {% if user.rola == 'admin' %}
+            <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
+            {% endif %}
+
+            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+            {% else %}
+            <a href="/logowanie" class="btn-outline">Logowanie</a>
+            {% endif %}
+
+            <button class="lang-btn">🌐 PL</button>
+            <a href="/pomoc" class="help-link">❓ Centrum Pomocy</a>
+        </div>
+    </header>
+
+
+    <section class="page-hero">
+        <div class="hero-content">
+            <h1>🚪 Logowanie</h1>
+            <p>Zaloguj się do swojego konta, aby zarządzać rezerwacjami i korzystać z dodatkowych usług.</p>
+        </div>
+    </section>
+
+    <main>
+        <div class="auth-wrapper">
+            <div class="auth-tabs">
+                <button class="tab-btn active" id="btn-login" onclick="switchTab('login')">Logowanie</button>
+                <button class="tab-btn" id="btn-register" onclick="switchTab('register')">Rejestracja</button>
+            </div>
+
+            <div class="auth-form-container" id="form-login">
+                <form action="/auth/login" method="POST">
+                    <div class="input-group">
+                        <label>✉️ Adres email</label>
+                        <input type="email" name="email" placeholder="twoj@email.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>🔒 Hasło</label>
+                        <input type="password" name="haslo" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox"> Zapamiętaj mnie
+                        </label>
+                        <a href="#" class="forgot-password">Zapomniałeś hasła?</a>
+                    </div>
+                    <button type="submit" class="btn-yellow">Zaloguj się</button>
+                </form>
+            </div>
+
+            <div class="auth-form-container" id="form-register" style="display: none;">
+                <form action="/auth/register" method="POST">
+                    <div class="input-group">
+                        <label>👤 Imię</label>
+                        <input type="text" name="imie" placeholder="np. Jan" required>
+                    </div>
+                    <div class="input-group">
+                        <label>👤 Nazwisko</label>
+                        <input type="text" name="nazwisko" placeholder="np. Kowalski" required>
+                    </div>
+                    <div class="input-group">
+                        <label>✉️ Adres email</label>
+                        <input type="email" name="email" placeholder="twoj@email.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>🔒 Hasło</label>
+                        <input type="password" name="haslo" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-yellow">Utwórz konto</button>
+                </form>
+            </div>
+        </div>
+
+        <script>function switchTab(tab) {
+
+        document.getElementById('btn-login').classList.remove('active');
+        document.getElementById('btn-register').classList.remove('active');
+        document.getElementById('form-login').style.display = 'none';
+        document.getElementById('form-register').style.display = 'none';
+
+
+        if(tab === 'login') {
+            document.getElementById('btn-login').classList.add('active');
+            document.getElementById('form-login').style.display = 'block';
+        } else {
+            document.getElementById('btn-register').classList.add('active');
+            document.getElementById('form-register').style.display = 'block';
+        }
+    }</script>
+
+        <section class="benefits-section">
+            <h2>Korzyści z konta SkyPort</h2>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="icon-circle">✓</div>
+                    <h3>Szybkie rezerwacje</h3>
+                    <p>Zapisane dane płatności i preferencje podróży</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="icon-circle">✓</div>
+                    <h3>Historia lotów</h3>
+                    <p>Dostęp do wszystkich swoich rezerwacji w jednym miejscu</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="icon-circle">✓</div>
+                    <h3>Ekskluzywne oferty</h3>
+                    <p>Specjalne promocje i rabaty dla zarejestrowanych użytkowników</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 SkyPort. Wszelkie prawa zastrzeżone.</p>
+        </div>
+    </footer>
+
+    
+</body>
+</html>

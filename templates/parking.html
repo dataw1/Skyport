@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkyPort - Parking Lotniskowy</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="parking.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/parking.css">
 </head>
 <body>
     <header class="navbar">
@@ -13,15 +13,26 @@
             <span class="icon">✈️</span> <a href="index.html">SkyPort</a>
         </div>
         <nav class="nav-links">
-            <a href="loty.html">Loty</a>
-            <a href="parking.html">Parking</a>
-            <a href="mapy.html">Mapy Terminali</a>
-            <a href="bezpieczenstwo.html">Informacje o Bezpieczeństwie</a>
+            <a href="/loty">Loty</a>
+            <a href="/parking">Parking</a>
+            <a href="/mapy">Mapy Terminali</a>
+            <a href="/bezpieczenstwo">Informacje o Bezpieczeństwie</a>
         </nav>
         <div class="nav-actions">
-            <a href="logowanie.html" class="btn-outline">Logowanie</a>
+            {% if user %}
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+
+            {% if user.rola == 'admin' %}
+            <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
+            {% endif %}
+
+            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+            {% else %}
+            <a href="/logowanie" class="btn-outline">Logowanie</a>
+            {% endif %}
+
             <button class="lang-btn">🌐 PL</button>
-            <a href="pomoc.html" class="help-link">❓ Centrum Pomocy</a>
+            <a href="/pomoc" class="help-link">❓ Centrum Pomocy</a>
         </div>
     </header>
     <section class="page-hero">
