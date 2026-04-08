@@ -1,10 +1,10 @@
-import psycopg2
+ï»¿import psycopg2
 from psycopg2.extras import RealDictCursor
 
 def get_db_connection():
     try:
         conn = psycopg2.connect(
-            dbname="Skyport",
+            dbname="postgres",
             user="postgres",
             password="admin",
             host="localhost",
@@ -12,5 +12,5 @@ def get_db_connection():
         )
         return conn
     except Exception as e:
-        print(f"B³¹d bazy danych: {e}")
+        print(f"BÅ‚Ä…d bazy danych: {e}")
         return None
