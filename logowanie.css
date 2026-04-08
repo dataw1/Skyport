@@ -1,0 +1,185 @@
+/* Tło i nagłówek */
+.page-hero {
+    background-color: #1a365d;
+    color: white;
+    padding: 60px 40px;
+}
+.hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.hero-content h1 {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Kontener logowania */
+.auth-wrapper {
+    max-width: 500px;
+    margin: -30px auto 60px; /* Ujemny margines podnosi formularz lekko na niebieskie tło, jeśli chcesz idealnie jak na screenie zrób margin: 50px auto */
+    padding: 0 20px;
+}
+
+/* Zakładki (Tabs) */
+.auth-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+    background: white;
+}
+.tab-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    background: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: #1a365d;
+    cursor: pointer;
+    text-align: center;
+}
+.tab-btn.active {
+    background: #1a365d;
+    color: white;
+}
+
+/* Formularz logowania */
+.auth-form-container {
+    background: #f8fafc;
+    padding: 30px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+}
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+.input-group label {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #1a365d;
+    font-weight: 500;
+}
+.input-group input {
+    padding: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Opcje pod hasłem */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4a5568;
+    cursor: pointer;
+}
+.forgot-password {
+    color: #1a365d;
+    text-decoration: none;
+}
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+.btn-yellow {
+    width: 100%;
+    background: #ecc94b;
+    color: #1a365d;
+    border: none;
+    padding: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Sekcja Social Login */
+.social-login-section {
+    text-align: center;
+    margin-top: 40px;
+}
+.social-login-section p {
+    color: #718096;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+.social-buttons {
+    display: flex;
+    gap: 20px;
+}
+.btn-social {
+    flex: 1;
+    background: white;
+    border: 1px solid #cbd5e0;
+    color: #1a365d;
+    padding: 12px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.btn-social:hover {
+    background: #f8fafc;
+}
+
+/* Sekcja korzyści */
+.benefits-section {
+    background: #f8fafc;
+    padding: 60px 20px;
+    text-align: center;
+    border-top: 1px solid #e2e8f0;
+}
+.benefits-section h2 {
+    color: #1a365d;
+    margin-bottom: 40px;
+}
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.benefit-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 40px 20px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.icon-circle {
+    width: 40px;
+    height: 40px;
+    background: #1a365d;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+.benefit-card h3 {
+    color: #1a365d;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+.benefit-card p {
+    color: #718096;
+    font-size: 14px;
+    line-height: 1.5;
+}
