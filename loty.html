@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Informacje o Lotach</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="loty.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <span class="icon">✈️</span> <a href="index.html">SkyPort</a>
+        </div>
+        <nav class="nav-links">
+            <a href="loty.html">Loty</a>
+            <a href="parking.html">Parking</a>
+            <a href="mapy.html">Mapy Terminali</a>
+            <a href="bezpieczenstwo.html">Informacje o Bezpieczeństwie</a>
+        </nav>
+        <div class="nav-actions">
+            <a href="logowanie.html" class="btn-outline">Logowanie</a>
+            <button class="lang-btn">🌐 PL</button>
+            <a href="pomoc.html" class="help-link">❓ Centrum Pomocy</a>
+        </div>
+    </header>
+    <section class="page-hero">
+        <div class="hero-content">
+            <h1>✈️ Informacje o Lotach</h1>
+            <p>Szukaj lotów, sprawdzaj przyloty i odloty w czasie rzeczywistym i planuj swoją podróż dzięki naszemu kompleksowemu systemowi śledzenia lotów.</p>
+        </div>
+    </section>
+
+    <main>
+        <section class="flight-search">
+            <div class="tabs">
+                <button class="tab active" id="btn-odloty">🛫 Odloty</button>
+                <button class="tab" id="btn-przyloty">🛬 Przyloty</button>
+            </div>
+            <form class="search-form" id="flightSearchForm">
+                <div class="input-group">
+                    <label>Kierunek</label>
+                    <input type="text" placeholder="📍 Miasto lub kod lotniska">
+                </div>
+                <div class="input-group">
+                    <label>Data</label>
+                    <input type="date">
+                </div>
+                <div class="input-group">
+                    <label>Numer Lotu</label>
+                    <input type="text" placeholder="✈️ np. BA123">
+                </div>
+                <button type="submit" class="btn-primary">🔍 Szukaj Lotów</button>
+            </form>
+        </section>
+
+        <section class="flight-board">
+            <h2>✈️ Odloty na Żywo</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nr Lotu</th>
+                        <th>Kierunek</th>
+                        <th>Planowo</th>
+                        <th>Bramka</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>BA123</td><td>Londyn Heathrow</td><td>14:30</td><td>A12</td><td><span class="status boarding">Boarding</span></td></tr>
+                    <tr><td>LH456</td><td>Frankfurt</td><td>14:45</td><td>B04</td><td><span class="status on-time">O czasie</span></td></tr>
+                    <tr><td>AF789</td><td>Paryż CDG</td><td>15:00</td><td>A08</td><td><span class="status on-time">O czasie</span></td></tr>
+                    <tr><td>KL321</td><td>Amsterdam</td><td>15:15</td><td>B11</td><td><span class="status delayed">Opóźniony</span></td></tr>
+                    <tr><td>EI654</td><td>Dublin</td><td>15:30</td><td>A15</td><td><span class="status on-time">O czasie</span></td></tr>
+                    <tr><td>UA987</td><td>Nowy Jork JFK</td><td>15:45</td><td>C02</td><td><span class="status boarding">Boarding</span></td></tr>
+                    <tr><td>DL246</td><td>Atlanta</td><td>16:00</td><td>C05</td><td><span class="status on-time">O czasie</span></td></tr>
+                    <tr><td>EK135</td><td>Dubaj</td><td>16:15</td><td>D01</td><td><span class="status on-time">O czasie</span></td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="flight-services">
+            <h2>Usługi Lotnicze</h2>
+            <div class="services-grid">
+                <div class="service-box">
+                    <h3>🕒 Aktualizacje na Żywo</h3>
+                    <p>Otrzymuj natychmiastowe powiadomienia o zmianach bramek, opóźnieniach i czasie wejścia na pokład.</p>
+                </div>
+                <div class="service-box">
+                    <h3>📍 Informacje o Bramkach</h3>
+                    <p>Znajdź lokalizację swojej bramki i szacowany czas dojścia od kontroli bezpieczeństwa.</p>
+                </div>
+                <div class="service-box">
+                    <h3>📅 Historia Lotów</h3>
+                    <p>Przeglądaj przeszłe loty i śledź statystyki punktualności.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom"><p>&copy; 2026 SkyPort. Wszelkie prawa zastrzeżone.</p></div>
+    </footer>
+    
+</body>
+</html>

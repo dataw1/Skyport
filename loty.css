@@ -1,0 +1,42 @@
+.page-hero {
+    background-color: #1a365d;
+    color: white;
+    padding: 60px 40px;
+}
+.hero-content { max-width: 1200px; margin: 0 auto; }
+.hero-content h1 { margin-bottom: 10px; }
+
+main { margin-top: 40px; }
+
+.flight-search {
+    background: #fff;
+    border: 1px solid #1a365d;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+}
+.tabs { border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; display: flex; gap: 20px; }
+.tab { background: none; border: none; padding: 10px 0; font-size: 16px; font-weight: bold; color: #718096; cursor: pointer; }
+.tab.active { color: #1a365d; border-bottom: 3px solid #1a365d; }
+
+.search-form { display: flex; gap: 20px; align-items: flex-end; }
+.input-group { display: flex; flex-direction: column; flex: 1; }
+.input-group label { margin-bottom: 8px; font-weight: bold; color: #1a365d; font-size: 14px; }
+.input-group input { padding: 12px; border: 1px solid #cbd5e0; border-radius: 4px; }
+.btn-primary { background-color: #ecc94b; color: #1a365d; border: none; padding: 14px 24px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+
+.flight-board h2 { color: #1a365d; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 50px; background: #fff;}
+th { background-color: #1a365d; color: #fff; text-align: left; padding: 15px; }
+td { padding: 15px; border-bottom: 1px solid #e2e8f0; }
+.status { padding: 5px 12px; border-radius: 4px; font-weight: 500; border: 1px solid; }
+.status.boarding { color: #dd6b20; border-color: #dd6b20; background: #feebc8; }
+.status.on-time { color: #38a169; border-color: #38a169; background: #c6f6d5; }
+.status.delayed { color: #e53e3e; border-color: #e53e3e; background: #fed7d7; }
+
+.flight-services { margin-bottom: 50px; }
+.flight-services h2 { color: #1a365d; margin-bottom: 20px; }
+.services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.service-box { background: #fff; padding: 30px; border: 1px solid #e2e8f0; border-radius: 8px; }
+.service-box h3 { color: #1a365d; margin-bottom: 15px; }
+.service-box p { color: #4a5568; font-size: 14px; line-height: 1.5; }
