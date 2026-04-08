@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Mapy Terminali</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mapy.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <span class="icon">✈️</span> <a href="index.html">SkyPort</a>
+        </div>
+        <nav class="nav-links">
+            <a href="loty.html">Loty</a>
+            <a href="parking.html">Parking</a>
+            <a href="mapy.html">Mapy Terminali</a>
+            <a href="bezpieczenstwo.html">Informacje o Bezpieczeństwie</a>
+        </nav>
+        <div class="nav-actions">
+            <a href="logowanie.html" class="btn-outline">Logowanie</a>
+            <button class="lang-btn">🌐 PL</button>
+            <a href="pomoc.html" class="help-link">❓ Centrum Pomocy</a>
+        </div>
+    </header>
+
+    <section class="page-hero">
+        <div class="hero-content">
+            <h1>🗺️ Mapy Terminali</h1>
+            <p>Poruszaj się po naszych terminalach z łatwością dzięki szczegółowym, interaktywnym mapom pokazującym bramki, udogodnienia i usługi.</p>
+        </div>
+    </section>
+
+    <main>
+        <section class="terminals-section">
+            <div class="terminals-grid">
+                <div class="terminal-card">
+                    <h3>Terminal A</h3>
+                    <div class="map-placeholder">📍</div>
+                    <p>Odloty i przyloty międzynarodowe • Bramki A1-A30</p>
+                    <button class="btn-outline-dark">Zobacz Mapę</button>
+                </div>
+                <div class="terminal-card">
+                    <h3>Terminal B</h3>
+                    <div class="map-placeholder">📍</div>
+                    <p>Loty krajowe • Bramki B1-B25</p>
+                    <button class="btn-outline-dark">Zobacz Mapę</button>
+                </div>
+                <div class="terminal-card">
+                    <h3>Terminal C</h3>
+                    <div class="map-placeholder">📍</div>
+                    <p>Tanie linie lotnicze • Bramki C1-C20</p>
+                    <button class="btn-outline-dark">Zobacz Mapę</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="directions-section">
+            <h2>Znajdź Drogę</h2>
+            <form id="directionsForm" class="directions-form">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Punkt Startowy</label>
+                        <select>
+                            <option>Główne Wejście</option>
+                            <option>Kontrola Bezpieczeństwa A</option>
+                            <option>Odbiór Bagażu</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Cel</label>
+                        <input type="text" placeholder="Numer bramki, nazwa sklepu lub usługa">
+                    </div>
+                </div>
+                <button type="submit" class="btn-yellow full-width">Wyznacz Trasę</button>
+            </form>
+        </section>
+
+        <section class="amenities-section">
+            <h2>Udogodnienia w Terminalu</h2>
+            <div class="amenities-grid">
+                <div class="amenity-box">
+                    <h3>🛍️ Sklepy</h3>
+                    <p>Ponad 45 punktów sprzedaży</p>
+                </div>
+                <div class="amenity-box">
+                    <h3>☕ Restauracje</h3>
+                    <p>Ponad 30 opcji gastronomicznych</p>
+                </div>
+                <div class="amenity-box">
+                    <h3>🏧 Bankomaty</h3>
+                    <p>15 lokalizacji</p>
+                </div>
+                <div class="amenity-box">
+                    <h3>ℹ️ Punkty Informacyjne</h3>
+                    <p>8 punktów pomocy</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    
+</body>
+</html>
