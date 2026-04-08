@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Strona Główna</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <span class="icon">✈️</span> <a href="index.html">SkyPort</a>
+        </div>
+        <nav class="nav-links">
+            <a href="loty.html">Loty</a>
+            <a href="parking.html">Parking</a>
+            <a href="mapy.html">Mapy Terminali</a>
+            <a href="bezpieczenstwo.html">Informacje o Bezpieczeństwie</a>
+        </nav>
+        <div class="nav-actions">
+            <a href="logowanie.html" class="btn-outline">Logowanie</a>
+            <button class="lang-btn">🌐 PL</button>
+            <a href="pomoc.html" class="help-link">❓ Centrum Pomocy</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="flight-search">
+            <div class="tabs">
+                <button class="tab active" id="btn-odloty">🛫 Odloty</button>
+                <button class="tab" id="btn-przyloty">🛬 Przyloty</button>
+            </div>
+            <form class="search-form" id="searchForm">
+                <div class="input-group">
+                    <label>Kierunek</label>
+                    <input type="text" placeholder="📍 Miasto lub kod lotniska">
+                </div>
+                <div class="input-group">
+                    <label>Data</label>
+                    <input type="date">
+                </div>
+                <div class="input-group">
+                    <label>Numer Lotu</label>
+                    <input type="text" placeholder="✈️ np. BA123">
+                </div>
+                <button type="submit" class="btn-primary">🔍 Szukaj Lotów</button>
+            </form>
+        </section>
+
+        <section class="flight-board">
+            <h2>✈️ Tablica Odlotów na Żywo</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nr Lotu</th>
+                        <th>Kierunek</th>
+                        <th>Planowo</th>
+                        <th>Bramka</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>BA123</td>
+                        <td>Londyn Heathrow</td>
+                        <td>14:30</td>
+                        <td>A12</td>
+                        <td><span class="status boarding">Boarding</span></td>
+                    </tr>
+                    <tr>
+                        <td>LH456</td>
+                        <td>Frankfurt</td>
+                        <td>14:45</td>
+                        <td>B04</td>
+                        <td><span class="status on-time">O czasie</span></td>
+                    </tr>
+                    <tr>
+                        <td>AF789</td>
+                        <td>Paryż CDG</td>
+                        <td>15:00</td>
+                        <td>A08</td>
+                        <td><span class="status on-time">O czasie</span></td>
+                    </tr>
+                    <tr>
+                        <td>KL321</td>
+                        <td>Amsterdam</td>
+                        <td>15:15</td>
+                        <td>B11</td>
+                        <td><span class="status delayed">Opóźniony</span></td>
+                    </tr>
+                    <tr>
+                        <td>EI654</td>
+                        <td>Dublin</td>
+                        <td>15:30</td>
+                        <td>A15</td>
+                        <td><span class="status on-time">O czasie</span></td>
+                    </tr>
+                    <tr>
+                        <td>DL246</td>
+                        <td>Atlanta</td>
+                        <td>16:00</td>
+                        <td>C05</td>
+                        <td><span class="status on-time">O czasie</span></td>
+                    </tr>
+                    <tr>
+                        <td>EK135</td>
+                        <td>Dubaj</td>
+                        <td>16:15</td>
+                        <td>D01</td>
+                        <td><span class="status on-time">O czasie</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="services">
+            <h2>Usługi dla Pasażerów</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>⚡ Fast Track</h3>
+                    <p>Omiń kolejki dzięki przyspieszonej kontroli bezpieczeństwa</p>
+                </div>
+                <div class="service-card">
+                    <h3>☕ Dostęp do Saloniku</h3>
+                    <p>Zrelaksuj się w komforcie przed lotem</p>
+                </div>
+                <div class="service-card">
+                    <h3>🛍️ Strefa Bezcłowa</h3>
+                    <p>Przeglądaj ekskluzywne zakupy i oszczędności</p>
+                </div>
+                <div class="service-card">
+                    <h3>📦 Biuro Rzeczy Znalezionych</h3>
+                    <p>Zgłoś lub odbierz zgubione przedmioty</p>
+                </div>
+                <div class="service-card">
+                    <h3>🚗 Transport</h3>
+                    <p>Transfery lotniskowe i usługi wynajmu samochodów</p>
+                </div>
+                <div class="service-card">
+                    <h3>♿ Pomoc Specjalna</h3>
+                    <p>Wsparcie dla pasażerów o ograniczonej sprawności ruchowej</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-columns">
+            <div class="col">
+                <h4>Podróż</h4>
+                <a href="#">Zarezerwuj Lot</a>
+                <a href="#">Status Lotu</a>
+                <a href="#">Odprawa Online</a>
+                <a href="#">Informacje o Bagażu</a>
+            </div>
+            <div class="col">
+                <h4>Usługi Lotniskowe</h4>
+                <a href="#">Mapy Terminali</a>
+                <a href="#">Opcje Parkingu</a>
+                <a href="#">Zakupy i Gastronomia</a>
+                <a href="#">Wi-Fi i Łączność</a>
+            </div>
+            <div class="col">
+                <h4>Informacje</h4>
+                <a href="#">Zasady Bezpieczeństwa</a>
+                <a href="#">Cło i Imigracja</a>
+                <a href="#">Restrykcje Podróżne</a>
+                <a href="#">FAQ</a>
+            </div>
+            <div class="col">
+                <h4>Kontakt</h4>
+                <a href="#">Centrum Pomocy</a>
+                <a href="#">Obsługa Klienta</a>
+                <a href="#">Opinie</a>
+                <a href="#">Dostępność</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 SkyPort. Wszelkie prawa zastrzeżone.</p>
+            <div class="legal-links">
+                <a href="#">Polityka Prywatności</a>
+                <a href="#">Warunki Świadczenia Usług</a>
+                <a href="#">Polityka Cookies</a>
+            </div>
+        </div>
+    </footer>
+
+    
+</body>
+</html>
