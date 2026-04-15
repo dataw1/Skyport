@@ -98,3 +98,44 @@
 .edit-btn:hover { background: #cbd5e0; }
 .status-btn { background: #ecc94b; color: #1a365d; }
 .status-btn:hover { background: #d6b543; }
+
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.page-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 15px;
+    border: 1px solid #cbd5e0;
+    background-color: #fff;
+    color: #1a365d;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 16px;
+    transition: all 0.2s ease-in-out;
+}
+
+.page-link:hover {
+    background-color: #f8fafc;
+    border-color: #1a365d;
+}
+
+.page-link.active {
+    background-color: #ecc94b;
+    color: #1a365d;
+    border-color: #ecc94b;
+    cursor: default;
+    pointer-events: none;
+}

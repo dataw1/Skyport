@@ -76,21 +76,32 @@
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td>BA123</td>
-                                    <td>Londyn Heathrow</td>
-                                    <td>14:30</td>
-                                    <td>A12</td>
-                                    <td><span class="status boarding">Boarding</span></td>
-                                    <td class="action-cell">
-                                        <a href="/admin/edytuj/1" class="action-btn edit-btn">Edytuj</a>
-                                        <form action="/admin/zmien_status/1" method="POST" style="display:inline;">
-                                            <button type="submit" class="action-btn status-btn">Zmień Status</button>
-                                        </form>
-                                    </td>
+                                    <td colspan="6" style="text-align: center; padding: 20px;">Brak lotów w bazie danych.</td>
                                 </tr>
                             {% endif %}
                         </tbody>
                     </table>
+
+                    {% if total_pages > 1 %}
+                    <div class="pagination">
+                        {% if current_page > 1 %}
+                            <a href="/admin?page={{ current_page - 1 }}" class="page-link">&laquo;</a>
+                        {% endif %}
+
+                        {% for p in page_range %}
+                            {% if p == current_page %}
+                                <span class="page-link active">{{ p }}</span>
+                            {% else %}
+                                <a href="/admin?page={{ p }}" class="page-link">{{ p }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if current_page < total_pages %}
+                            <a href="/admin?page={{ current_page + 1 }}" class="page-link">&raquo;</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
                 </div>
             </section>
         </main>

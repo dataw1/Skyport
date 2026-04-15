@@ -294,37 +294,52 @@ async def wylogowanie():
     return response
 
 @app.get("/admin", response_class=HTMLResponse)
-async def panel_admina(request: Request):
+async def panel_admina(request: Request, page: int = 1):
     user = get_current_user(request)
-    
-
     if not user or user.get("rola") != "admin":
         return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-
+        
     conn = get_db_connection()
     loty_do_wyswietlenia = []
+    
+    total_pages = 1
+    items_per_page = 20
+    page_range = []
     
     if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
-            cur.execute("SELECT * FROM Loty ORDER BY id_lotu DESC LIMIT 20")
-            loty_db = cur.fetchall()
+            cur.execute("SELECT COUNT(*) as total FROM Loty")
+            total_items = cur.fetchone()['total']
             
 
+            total_pages = math.ceil(total_items / items_per_page)
+            
+            if page < 1: page = 1
+            if page > total_pages and total_pages > 0: page = total_pages
+            
+            offset = (page - 1) * items_per_page
+            cur.execute("SELECT * FROM Loty ORDER BY id_lotu DESC LIMIT %s OFFSET %s", (items_per_page, offset))
+            loty_db = cur.fetchall()
+            
             for lot in loty_db:
-                status_css = "on-time" 
+                status_css = "on-time"
                 obecny_status = str(lot.get('status', 'O czasie'))
                 
                 if obecny_status.lower() == 'opóźniony':
                     status_css = "delayed"
                 elif obecny_status.lower() == 'boarding':
                     status_css = "boarding"
+                elif obecny_status.lower() == 'odwołany':
+                    status_css = "delayed"
+                
+                planowo_str = lot['planowo'].strftime('%Y-%m-%d %H:%M') if lot.get('planowo') else 'Brak'
                 
                 loty_do_wyswietlenia.append({
                     "id": lot.get('id_lotu', 1),
                     "numer_lotu": lot.get('numer_lotu', 'Brak'),
                     "kierunek": lot.get('kierunek', 'Brak'),
-                    "planowo": lot.get('planowo', '00:00'),
+                    "planowo": planowo_str,
                     "bramka": lot.get('bramka', '-'),
                     "status": obecny_status,
                     "status_css": status_css
@@ -336,12 +351,25 @@ async def panel_admina(request: Request):
             conn.close()
 
 
+    start_page = max(1, page - 1)
+    end_page = min(total_pages, page + 1)
+    
+    if page == 1:
+        end_page = min(total_pages, 3)
+    elif page == total_pages and total_pages >= 3:
+        start_page = total_pages - 2
+        
+    page_range = range(start_page, end_page + 1)
+
     return templates.TemplateResponse(
         request=request, 
         name="admin_panel.html", 
         context={
             "request": request, 
             "user": user, 
-            "loty": loty_do_wyswietlenia
+            "loty": loty_do_wyswietlenia,
+            "current_page": page,
+            "total_pages": total_pages,
+            "page_range": page_range
         }
     )
