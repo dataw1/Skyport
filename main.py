@@ -351,7 +351,7 @@ async def panel_admina(request: Request, page: int = 1):
     loty_do_wyswietlenia = []
     
     total_pages = 1
-    items_per_page = 20
+    items_per_page = 10
     page_range = []
     
     if conn:
