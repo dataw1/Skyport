@@ -6,9 +6,11 @@ from fastapi import Form, status
 from fastapi.responses import RedirectResponse
 import jwt
 import math
+import re
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from psycopg2.extras import RealDictCursor
+
 
 # Polaczenie z baza danych
 from database import get_db_connection
@@ -220,9 +222,17 @@ async def strona_logowania(request: Request):
 
 @app.post("/auth/register")
 async def rejestracja_post(imie: str = Form(...), nazwisko: str = Form(...), email: str = Form(...), haslo: str = Form(...)):
+    wzorzec_email = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    if not re.match(wzorzec_email, email):
+        return RedirectResponse(url="/logowanie?error=invalid_email", status_code=status.HTTP_302_FOUND)
+
     conn = get_db_connection()
     cur = conn.cursor()
     try:
+        cur.execute("SELECT id_konta FROM Konta WHERE email = %s", (email,))
+        if cur.fetchone():
+            return RedirectResponse(url="/logowanie?error=email_exists", status_code=status.HTTP_302_FOUND)
+
         haslo_hash = pwd_context.hash(haslo)
         
         cur.execute(
@@ -256,7 +266,7 @@ async def rejestracja_post(imie: str = Form(...), nazwisko: str = Form(...), ema
         cur.close()
         conn.close()
 
-        
+
 @app.post("/auth/login")
 async def logowanie_post(email: str = Form(...), haslo: str = Form(...)):
     conn = get_db_connection()

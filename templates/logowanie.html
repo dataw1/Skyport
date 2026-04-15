@@ -46,70 +46,114 @@
 
     <main>
         <div class="auth-wrapper">
-            <div class="auth-tabs">
-                <button class="tab-btn active" id="btn-login" onclick="switchTab('login')">Logowanie</button>
-                <button class="tab-btn" id="btn-register" onclick="switchTab('register')">Rejestracja</button>
+    <div class="auth-tabs">
+        <button class="tab-btn active" id="btn-login" onclick="switchTab('login')">Logowanie</button>
+        <button class="tab-btn" id="btn-register" onclick="switchTab('register')">Rejestracja</button>
+    </div>
+
+    <div class="auth-form-container" id="form-login">
+        <form action="/auth/login" method="POST">
+            <div class="input-group">
+                <label>✉️ Adres email</label>
+                <input type="email" name="email" placeholder="twoj@email.com" required>
             </div>
-
-            <div class="auth-form-container" id="form-login">
-                <form action="/auth/login" method="POST">
-                    <div class="input-group">
-                        <label>✉️ Adres email</label>
-                        <input type="email" name="email" placeholder="twoj@email.com" required>
-                    </div>
-                    <div class="input-group">
-                        <label>🔒 Hasło</label>
-                        <input type="password" name="haslo" placeholder="••••••••" required>
-                    </div>
-                    <div class="form-options">
-                        <label class="checkbox-label">
-                            <input type="checkbox"> Zapamiętaj mnie
-                        </label>
-                        <a href="#" class="forgot-password">Zapomniałeś hasła?</a>
-                    </div>
-                    <button type="submit" class="btn-yellow">Zaloguj się</button>
-                </form>
+            <div class="input-group">
+                <label>🔒 Hasło</label>
+                <input type="password" name="haslo" placeholder="••••••••" required>
             </div>
-
-            <div class="auth-form-container" id="form-register" style="display: none;">
-                <form action="/auth/register" method="POST">
-                    <div class="input-group">
-                        <label>👤 Imię</label>
-                        <input type="text" name="imie" placeholder="np. Jan" required>
-                    </div>
-                    <div class="input-group">
-                        <label>👤 Nazwisko</label>
-                        <input type="text" name="nazwisko" placeholder="np. Kowalski" required>
-                    </div>
-                    <div class="input-group">
-                        <label>✉️ Adres email</label>
-                        <input type="email" name="email" placeholder="twoj@email.com" required>
-                    </div>
-                    <div class="input-group">
-                        <label>🔒 Hasło</label>
-                        <input type="password" name="haslo" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="btn-yellow">Utwórz konto</button>
-                </form>
+            <div class="form-options">
+                <label class="checkbox-label">
+                    <input type="checkbox"> Zapamiętaj mnie
+                </label>
+                <a href="#" class="forgot-password">Zapomniałeś hasła?</a>
             </div>
-        </div>
+            <button type="submit" class="btn-yellow full-width">Zaloguj się</button>
+        </form>
+    </div>
 
-        <script>function switchTab(tab) {
+    <div class="auth-form-container" id="form-register" style="display: none;">
+        <form action="/auth/register" method="POST">
+            <div class="input-group">
+                <label>👤 Imię</label>
+                <input type="text" name="imie" placeholder="np. Jan" required>
+            </div>
+            <div class="input-group">
+                <label>👤 Nazwisko</label>
+                <input type="text" name="nazwisko" placeholder="np. Kowalski" required>
+            </div>
+            <div class="input-group">
+                <label>✉️ Adres email</label>
+                <input type="email" name="email" placeholder="twoj@email.com" required>
+            </div>
+            <div class="input-group">
+                <label>🔒 Hasło</label>
+                <input type="password" name="haslo" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-yellow full-width">Utwórz konto</button>
+        </form>
+    </div>
+</div>
 
-        document.getElementById('btn-login').classList.remove('active');
-        document.getElementById('btn-register').classList.remove('active');
-        document.getElementById('form-login').style.display = 'none';
-        document.getElementById('form-register').style.display = 'none';
+<script>
+    function switchTab(tab) {
+        const btnLogin = document.getElementById('btn-login');
+        const btnRegister = document.getElementById('btn-register');
+        const formLogin = document.getElementById('form-login');
+        const formRegister = document.getElementById('form-register');
 
+        if (!btnLogin || !btnRegister || !formLogin || !formRegister) return;
+
+        btnLogin.classList.remove('active');
+        btnRegister.classList.remove('active');
+        formLogin.style.display = 'none';
+        formRegister.style.display = 'none';
 
         if(tab === 'login') {
-            document.getElementById('btn-login').classList.add('active');
-            document.getElementById('form-login').style.display = 'block';
+            btnLogin.classList.add('active');
+            formLogin.style.display = 'block';
         } else {
-            document.getElementById('btn-register').classList.add('active');
-            document.getElementById('form-register').style.display = 'block';
+            btnRegister.classList.add('active');
+            formRegister.style.display = 'block';
         }
-    }</script>
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+
+        if (error) {
+            const errorBox = document.createElement('div');
+            errorBox.style.backgroundColor = '#fed7d7';
+            errorBox.style.color = '#e53e3e';
+            errorBox.style.padding = '15px';
+            errorBox.style.borderRadius = '4px';
+            errorBox.style.marginBottom = '20px';
+            errorBox.style.textAlign = 'center';
+            errorBox.style.fontWeight = 'bold';
+            errorBox.style.border = '1px solid #e53e3e';
+
+            let targetTab = 'register'; 
+
+            if(error === 'email_exists') {
+                errorBox.innerHTML = "⚠️ Konto z tym adresem email już istnieje!";
+            } else if (error === 'invalid_email') {
+                errorBox.innerHTML = "⚠️ Podany adres email jest niepoprawny!";
+            } else if (error === 'register_failed') {
+                errorBox.innerHTML = "⚠️ Wystąpił błąd podczas rejestracji.";
+            } else if (error === 'invalid') {
+                errorBox.innerHTML = "⚠️ Nieprawidłowy email lub hasło!";
+                targetTab = 'login'; 
+            }
+
+            const tabsContainer = document.querySelector('.auth-tabs');
+            if (tabsContainer) {
+                tabsContainer.parentNode.insertBefore(errorBox, tabsContainer);
+            }
+
+            switchTab(targetTab);
+        }
+    });
+</script>
 
         <section class="benefits-section">
             <h2>Korzyści z konta SkyPort</h2>
