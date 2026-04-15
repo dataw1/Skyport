@@ -218,7 +218,6 @@ async def strona_logowania(request: Request):
     return templates.TemplateResponse(request=request, name="logowanie.html", context={"request": request, "user": user})
 
 
-
 @app.post("/auth/register")
 async def rejestracja_post(imie: str = Form(...), nazwisko: str = Form(...), email: str = Form(...), haslo: str = Form(...)):
     conn = get_db_connection()
@@ -226,30 +225,38 @@ async def rejestracja_post(imie: str = Form(...), nazwisko: str = Form(...), ema
     try:
         haslo_hash = pwd_context.hash(haslo)
         
-
         cur.execute(
             "INSERT INTO Konta (email, haslo, rola) VALUES (%s, %s, %s) RETURNING id_konta",
             (email, haslo_hash, 'pasazer')
         )
         nowe_id_konta = cur.fetchone()[0]
 
-
         cur.execute(
             "INSERT INTO Pasazerowie (id_konta, imie, nazwisko) VALUES (%s, %s, %s)",
             (nowe_id_konta, imie, nazwisko)
         )
         conn.commit()
-    except Exception as e:
+
+        token = jwt.encode({
+            "email": email,
+            "rola": "pasazer",
+            "id": nowe_id_konta,
+            "imie": imie,
+            "exp": datetime.utcnow() + timedelta(hours=8)
+        }, SECRET_KEY, algorithm=ALGORITHM)
+
+        response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+        response.set_cookie(key="session_token", value=token, httponly=True)
+        return response
+
+    except Exception:
         conn.rollback()
-        print(f"Błąd rejestracji: {e}")
         return RedirectResponse(url="/logowanie?error=register_failed", status_code=status.HTTP_302_FOUND)
     finally:
         cur.close()
         conn.close()
 
-
-    return RedirectResponse(url="/logowanie?success=registered", status_code=status.HTTP_302_FOUND)
-
+        
 @app.post("/auth/login")
 async def logowanie_post(email: str = Form(...), haslo: str = Form(...)):
     conn = get_db_connection()
