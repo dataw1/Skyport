@@ -78,18 +78,45 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>BA123</td><td>Londyn Heathrow</td><td>14:30</td><td>A12</td><td><span class="status boarding">Boarding</span></td></tr>
-                    <tr><td>LH456</td><td>Frankfurt</td><td>14:45</td><td>B04</td><td><span class="status on-time">O czasie</span></td></tr>
-                    <tr><td>AF789</td><td>Paryż CDG</td><td>15:00</td><td>A08</td><td><span class="status on-time">O czasie</span></td></tr>
-                    <tr><td>KL321</td><td>Amsterdam</td><td>15:15</td><td>B11</td><td><span class="status delayed">Opóźniony</span></td></tr>
-                    <tr><td>EI654</td><td>Dublin</td><td>15:30</td><td>A15</td><td><span class="status on-time">O czasie</span></td></tr>
-                    <tr><td>UA987</td><td>Nowy Jork JFK</td><td>15:45</td><td>C02</td><td><span class="status boarding">Boarding</span></td></tr>
-                    <tr><td>DL246</td><td>Atlanta</td><td>16:00</td><td>C05</td><td><span class="status on-time">O czasie</span></td></tr>
-                    <tr><td>EK135</td><td>Dubaj</td><td>16:15</td><td>D01</td><td><span class="status on-time">O czasie</span></td></tr>
+                    {% if loty %}
+                        {% for lot in loty %}
+                        <tr>
+                            <td>{{ lot.numer_lotu }}</td>
+                            <td>{{ lot.kierunek }}</td>
+                            <td>{{ lot.planowo }}</td>
+                            <td>{{ lot.bramka }}</td>
+                            <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Obecnie brak lotów w systemie.</td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
-        </section>
 
+            {% if total_pages > 1 %}
+            <div class="pagination">
+                {% if current_page > 1 %}
+                    <a href="/loty?page={{ current_page - 1 }}" class="page-link">&laquo;</a>
+                {% endif %}
+
+                {% for p in page_range %}
+                    {% if p == current_page %}
+                        <span class="page-link active">{{ p }}</span>
+                    {% else %}
+                        <a href="/loty?page={{ p }}" class="page-link">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if current_page < total_pages %}
+                    <a href="/loty?page={{ current_page + 1 }}" class="page-link">&raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+        
         <section class="flight-services">
             <h2>Usługi Lotnicze</h2>
             <div class="services-grid">

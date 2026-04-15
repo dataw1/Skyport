@@ -40,3 +40,46 @@ td { padding: 15px; border-bottom: 1px solid #e2e8f0; }
 .service-box { background: #fff; padding: 30px; border: 1px solid #e2e8f0; border-radius: 8px; }
 .service-box h3 { color: #1a365d; margin-bottom: 15px; }
 .service-box p { color: #4a5568; font-size: 14px; line-height: 1.5; }
+
+
+/* Paginacja / Numery stron */
+.pagination {
+    display: flex;
+    justify-content: center; /* To odpowiada za wyśrodkowanie! */
+    align-items: center;
+    width: 100%;             /* Zajmuje całą szerokość sekcji */
+    gap: 8px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.page-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 15px;
+    border: 1px solid #cbd5e0;
+    background-color: #fff;
+    color: #1a365d;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 16px;
+    transition: all 0.2s ease-in-out;
+}
+
+.page-link:hover {
+    background-color: #f8fafc;
+    border-color: #1a365d;
+}
+
+/* Wyróżniona obecna strona */
+.page-link.active {
+    background-color: #ecc94b;
+    color: #1a365d;
+    border-color: #ecc94b;
+    cursor: default;
+    pointer-events: none;
+}

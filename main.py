@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi import Form, status
 from fastapi.responses import RedirectResponse
 import jwt
+import math
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from psycopg2.extras import RealDictCursor
@@ -67,12 +68,129 @@ def utworz_admina_przy_starcie():
 @app.get("/", response_class=HTMLResponse)
 async def strona_glowna(request: Request):
     user = get_current_user(request)
-    return templates.TemplateResponse(request=request, name="index.html", context={"request": request, "user": user})
+    
+    # Pobieranie lotów z bazy danych dla strony głównej
+    conn = get_db_connection()
+    loty_do_wyswietlenia = []
+    
+    if conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        try:
+            # Pobieramy np. 10 najbliższych lotów
+            cur.execute("SELECT * FROM Loty ORDER BY planowo ASC LIMIT 10")
+            loty_db = cur.fetchall()
+            
+            for lot in loty_db:
+                status_css = "on-time"
+                obecny_status = str(lot.get('status', 'O czasie'))
+                
+                if obecny_status.lower() == 'opóźniony':
+                    status_css = "delayed"
+                elif obecny_status.lower() == 'boarding':
+                    status_css = "boarding"
+                
+                # Formatowanie czasu do postaci HH:MM, jeśli 'planowo' to obiekt datetime
+                planowo_str = lot['planowo'].strftime('%H:%M') if lot.get('planowo') else '00:00'
+                
+                loty_do_wyswietlenia.append({
+                    "numer_lotu": lot.get('numer_lotu', 'Brak'),
+                    "kierunek": lot.get('kierunek', 'Brak'),
+                    "planowo": planowo_str,
+                    "bramka": lot.get('bramka', '-'),
+                    "status": obecny_status,
+                    "status_css": status_css
+                })
+        except Exception as e:
+            print(f"Błąd pobierania lotów na stronę główną: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
+    return templates.TemplateResponse(
+        request=request, 
+        name="index.html", 
+        context={
+            "request": request, 
+            "user": user,
+            "loty": loty_do_wyswietlenia # Przekazujemy loty do HTML-a
+        }
+    )
 
 @app.get("/loty", response_class=HTMLResponse)
-async def strona_loty(request: Request):
+async def strona_loty(request: Request, page: int = 1):
     user = get_current_user(request)
-    return templates.TemplateResponse(request=request, name="loty.html", context={"request": request, "user": user})
+    conn = get_db_connection()
+    loty_do_wyswietlenia = []
+    
+    total_pages = 1
+    items_per_page = 20
+    page_range = []
+    
+    if conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        try:
+
+            cur.execute("SELECT COUNT(*) as total FROM Loty")
+            total_items = cur.fetchone()['total']
+
+            total_pages = math.ceil(total_items / items_per_page)
+
+            if page < 1: page = 1
+            if page > total_pages and total_pages > 0: page = total_pages
+
+            offset = (page - 1) * items_per_page
+            cur.execute("SELECT * FROM Loty ORDER BY planowo ASC LIMIT %s OFFSET %s", (items_per_page, offset))
+            loty_db = cur.fetchall()
+            
+            for lot in loty_db:
+                status_css = "on-time"
+                obecny_status = str(lot.get('status', 'O czasie'))
+                
+                if obecny_status.lower() == 'opóźniony':
+                    status_css = "delayed"
+                elif obecny_status.lower() == 'boarding':
+                    status_css = "boarding"
+                elif obecny_status.lower() == 'odwołany':
+                    status_css = "delayed" 
+                
+                planowo_str = lot['planowo'].strftime('%H:%M') if lot.get('planowo') else '00:00'
+                
+                loty_do_wyswietlenia.append({
+                    "numer_lotu": lot.get('numer_lotu', 'Brak'),
+                    "kierunek": lot.get('kierunek', 'Brak'),
+                    "planowo": planowo_str,
+                    "bramka": lot.get('bramka', '-'),
+                    "status": obecny_status,
+                    "status_css": status_css
+                })
+        except Exception as e:
+            print(f"Błąd pobierania lotów: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
+    start_page = max(1, page - 1)
+    end_page = min(total_pages, page + 1)
+    
+    if page == 1:
+        end_page = min(total_pages, 3)
+    elif page == total_pages and total_pages >= 3:
+        start_page = total_pages - 2
+        
+    page_range = range(start_page, end_page + 1)
+
+    return templates.TemplateResponse(
+        request=request, 
+        name="loty.html", 
+        context={
+            "request": request, 
+            "user": user,
+            "loty": loty_do_wyswietlenia,
+            "current_page": page,
+            "total_pages": total_pages,
+            "page_range": page_range
+        }
+    )
 
 @app.get("/parking", response_class=HTMLResponse)
 async def strona_parking(request: Request):

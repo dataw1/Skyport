@@ -72,55 +72,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>BA123</td>
-                        <td>Londyn Heathrow</td>
-                        <td>14:30</td>
-                        <td>A12</td>
-                        <td><span class="status boarding">Boarding</span></td>
-                    </tr>
-                    <tr>
-                        <td>LH456</td>
-                        <td>Frankfurt</td>
-                        <td>14:45</td>
-                        <td>B04</td>
-                        <td><span class="status on-time">O czasie</span></td>
-                    </tr>
-                    <tr>
-                        <td>AF789</td>
-                        <td>Paryż CDG</td>
-                        <td>15:00</td>
-                        <td>A08</td>
-                        <td><span class="status on-time">O czasie</span></td>
-                    </tr>
-                    <tr>
-                        <td>KL321</td>
-                        <td>Amsterdam</td>
-                        <td>15:15</td>
-                        <td>B11</td>
-                        <td><span class="status delayed">Opóźniony</span></td>
-                    </tr>
-                    <tr>
-                        <td>EI654</td>
-                        <td>Dublin</td>
-                        <td>15:30</td>
-                        <td>A15</td>
-                        <td><span class="status on-time">O czasie</span></td>
-                    </tr>
-                    <tr>
-                        <td>DL246</td>
-                        <td>Atlanta</td>
-                        <td>16:00</td>
-                        <td>C05</td>
-                        <td><span class="status on-time">O czasie</span></td>
-                    </tr>
-                    <tr>
-                        <td>EK135</td>
-                        <td>Dubaj</td>
-                        <td>16:15</td>
-                        <td>D01</td>
-                        <td><span class="status on-time">O czasie</span></td>
-                    </tr>
+                    {% if loty %}
+                        {% for lot in loty %}
+                        <tr>
+                            <td>{{ lot.numer_lotu }}</td>
+                            <td>{{ lot.kierunek }}</td>
+                            <td>{{ lot.planowo }}</td>
+                            <td>{{ lot.bramka }}</td>
+                            <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td>BA123</td>
+                            <td>Londyn Heathrow</td>
+                            <td>14:30</td>
+                            <td>A12</td>
+                            <td><span class="status boarding">Boarding</span></td>
+                        </tr>
+                        <tr>
+                            <td>LH456</td>
+                            <td>Frankfurt</td>
+                            <td>14:45</td>
+                            <td>B04</td>
+                            <td><span class="status on-time">O czasie</span></td>
+                        </tr>
+                        <tr>
+                            <td>KL321</td>
+                            <td>Amsterdam</td>
+                            <td>15:15</td>
+                            <td>B11</td>
+                            <td><span class="status delayed">Opóźniony</span></td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </section>
@@ -157,36 +141,6 @@
     </main>
 
     <footer class="site-footer">
-        <div class="footer-columns">
-            <div class="col">
-                <h4>Podróż</h4>
-                <a href="#">Zarezerwuj Lot</a>
-                <a href="#">Status Lotu</a>
-                <a href="#">Odprawa Online</a>
-                <a href="#">Informacje o Bagażu</a>
-            </div>
-            <div class="col">
-                <h4>Usługi Lotniskowe</h4>
-                <a href="#">Mapy Terminali</a>
-                <a href="#">Opcje Parkingu</a>
-                <a href="#">Zakupy i Gastronomia</a>
-                <a href="#">Wi-Fi i Łączność</a>
-            </div>
-            <div class="col">
-                <h4>Informacje</h4>
-                <a href="#">Zasady Bezpieczeństwa</a>
-                <a href="#">Cło i Imigracja</a>
-                <a href="#">Restrykcje Podróżne</a>
-                <a href="#">FAQ</a>
-            </div>
-            <div class="col">
-                <h4>Kontakt</h4>
-                <a href="#">Centrum Pomocy</a>
-                <a href="#">Obsługa Klienta</a>
-                <a href="#">Opinie</a>
-                <a href="#">Dostępność</a>
-            </div>
-        </div>
         <div class="footer-bottom">
             <p>&copy; 2026 SkyPort. Wszelkie prawa zastrzeżone.</p>
             <div class="legal-links">
