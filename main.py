@@ -174,3 +174,56 @@ async def wylogowanie():
     response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     response.delete_cookie("session_token")
     return response
+
+@app.get("/admin", response_class=HTMLResponse)
+async def panel_admina(request: Request):
+    user = get_current_user(request)
+    
+
+    if not user or user.get("rola") != "admin":
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+
+    conn = get_db_connection()
+    loty_do_wyswietlenia = []
+    
+    if conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        try:
+            cur.execute("SELECT * FROM Loty ORDER BY id_lotu DESC LIMIT 20")
+            loty_db = cur.fetchall()
+            
+
+            for lot in loty_db:
+                status_css = "on-time" 
+                obecny_status = str(lot.get('status', 'O czasie'))
+                
+                if obecny_status.lower() == 'opóźniony':
+                    status_css = "delayed"
+                elif obecny_status.lower() == 'boarding':
+                    status_css = "boarding"
+                
+                loty_do_wyswietlenia.append({
+                    "id": lot.get('id_lotu', 1),
+                    "numer_lotu": lot.get('numer_lotu', 'Brak'),
+                    "kierunek": lot.get('kierunek', 'Brak'),
+                    "planowo": lot.get('planowo', '00:00'),
+                    "bramka": lot.get('bramka', '-'),
+                    "status": obecny_status,
+                    "status_css": status_css
+                })
+        except Exception as e:
+            print(f"Błąd pobierania lotów do panelu admina: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
+
+    return templates.TemplateResponse(
+        request=request, 
+        name="admin_panel.html", 
+        context={
+            "request": request, 
+            "user": user, 
+            "loty": loty_do_wyswietlenia
+        }
+    )

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Panel Administratora</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/admin_panel.css">
+</head>
+<body class="admin-body">
+    
+    <header class="navbar">
+        <div class="logo">
+            <span class="icon">✈️</span> <a href="/">SkyPort</a>
+        </div>
+        <nav class="nav-links">
+            <a href="/loty">Loty</a>
+            <a href="/parking">Parking</a>
+            <a href="/mapy">Mapy Terminali</a>
+            <a href="/bezpieczenstwo">Informacje o Bezpieczeństwie</a>
+        </nav>
+        <div class="nav-actions">
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+            <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
+            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+            <button class="lang-btn">🌐 PL</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <ul class="sidebar-menu">
+                <li class="active"><a href="/admin">📊 Pulpit (Dashboard)</a></li>
+                <li><a href="/admin/loty">✈️ Zarządzaj Lotami</a></li>
+                <li><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
+                <li><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1>Pulpit Zarządzania</h1>
+                <a href="/admin/dodaj_lot" class="btn-yellow" style="text-decoration: none;">+ Dodaj Nowy Lot</a>
+            </div>
+
+            <section class="admin-content-section">
+                <h2>Ostatnie Loty (Zarządzanie)</h2>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Nr Lotu</th>
+                                <th>Kierunek</th>
+                                <th>Planowo</th>
+                                <th>Bramka</th>
+                                <th>Status</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if loty %}
+                                {% for lot in loty %}
+                                <tr>
+                                    <td>{{ lot.numer_lotu }}</td>
+                                    <td>{{ lot.kierunek }}</td>
+                                    <td>{{ lot.planowo }}</td>
+                                    <td>{{ lot.bramka }}</td>
+                                    <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
+                                    <td class="action-cell">
+                                        <a href="/admin/edytuj/{{ lot.id }}" class="action-btn edit-btn">Edytuj</a>
+                                        <form action="/admin/zmien_status/{{ lot.id }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="action-btn status-btn">Zmień Status</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td>BA123</td>
+                                    <td>Londyn Heathrow</td>
+                                    <td>14:30</td>
+                                    <td>A12</td>
+                                    <td><span class="status boarding">Boarding</span></td>
+                                    <td class="action-cell">
+                                        <a href="/admin/edytuj/1" class="action-btn edit-btn">Edytuj</a>
+                                        <form action="/admin/zmien_status/1" method="POST" style="display:inline;">
+                                            <button type="submit" class="action-btn status-btn">Zmień Status</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
