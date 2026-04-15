@@ -48,20 +48,24 @@
                 <button class="tab active" id="btn-odloty">🛫 Odloty</button>
                 <button class="tab" id="btn-przyloty">🛬 Przyloty</button>
             </div>
-            <form class="search-form" id="flightSearchForm">
+            <form action="{{ request.url.path }}" method="GET" class="search-form">
                 <div class="input-group">
                     <label>Kierunek</label>
-                    <input type="text" placeholder="📍 Miasto lub kod lotniska">
+                    <input type="text" name="kierunek" placeholder="📍 Miasto lub kod lotniska" value="{{ request.query_params.get('kierunek', '') }}">
                 </div>
                 <div class="input-group">
                     <label>Data</label>
-                    <input type="date">
+                    <input type="date" name="data" value="{{ request.query_params.get('data', '') }}">
                 </div>
                 <div class="input-group">
                     <label>Numer Lotu</label>
-                    <input type="text" placeholder="✈️ np. BA123">
+                    <input type="text" name="numer_lotu" placeholder="✈️ np. BA123" value="{{ request.query_params.get('numer_lotu', '') }}">
                 </div>
                 <button type="submit" class="btn-primary">🔍 Szukaj Lotów</button>
+                
+                {% if request.query_params.get('kierunek') or request.query_params.get('data') or request.query_params.get('numer_lotu') %}
+                    <a href="{{ request.url.path }}" class="btn-outline" style="padding: 14px 20px; text-decoration: none; display: flex; align-items: center; border-color: #e53e3e; color: #e53e3e;">✖ Wyczyść</a>
+                {% endif %}
             </form>
         </section>
 
@@ -90,7 +94,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px;">Obecnie brak lotów w systemie.</td>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Nie znaleziono lotów spełniających podane kryteria.</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -99,19 +103,19 @@
             {% if total_pages > 1 %}
             <div class="pagination">
                 {% if current_page > 1 %}
-                    <a href="/loty?page={{ current_page - 1 }}" class="page-link">&laquo;</a>
+                    <a href="/loty?page={{ current_page - 1 }}{{ search_query }}" class="page-link">&laquo;</a>
                 {% endif %}
 
                 {% for p in page_range %}
                     {% if p == current_page %}
                         <span class="page-link active">{{ p }}</span>
                     {% else %}
-                        <a href="/loty?page={{ p }}" class="page-link">{{ p }}</a>
+                        <a href="/loty?page={{ p }}{{ search_query }}" class="page-link">{{ p }}</a>
                     {% endif %}
                 {% endfor %}
 
                 {% if current_page < total_pages %}
-                    <a href="/loty?page={{ current_page + 1 }}" class="page-link">&raquo;</a>
+                    <a href="/loty?page={{ current_page + 1 }}{{ search_query }}" class="page-link">&raquo;</a>
                 {% endif %}
             </div>
             {% endif %}

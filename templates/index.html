@@ -42,20 +42,24 @@
                 <button class="tab active" id="btn-odloty">🛫 Odloty</button>
                 <button class="tab" id="btn-przyloty">🛬 Przyloty</button>
             </div>
-            <form class="search-form" id="searchForm">
+            <form action="{{ request.url.path }}" method="GET" class="search-form">
                 <div class="input-group">
                     <label>Kierunek</label>
-                    <input type="text" placeholder="📍 Miasto lub kod lotniska">
+                    <input type="text" name="kierunek" placeholder="📍 Miasto lub kod lotniska" value="{{ request.query_params.get('kierunek', '') }}">
                 </div>
                 <div class="input-group">
                     <label>Data</label>
-                    <input type="date">
+                    <input type="date" name="data" value="{{ request.query_params.get('data', '') }}">
                 </div>
                 <div class="input-group">
                     <label>Numer Lotu</label>
-                    <input type="text" placeholder="✈️ np. BA123">
+                    <input type="text" name="numer_lotu" placeholder="✈️ np. BA123" value="{{ request.query_params.get('numer_lotu', '') }}">
                 </div>
                 <button type="submit" class="btn-primary">🔍 Szukaj Lotów</button>
+                
+                {% if request.query_params.get('kierunek') or request.query_params.get('data') or request.query_params.get('numer_lotu') %}
+                    <a href="{{ request.url.path }}" class="btn-outline" style="padding: 14px 20px; text-decoration: none; display: flex; align-items: center; border-color: #e53e3e; color: #e53e3e;">✖ Wyczyść</a>
+                {% endif %}
             </form>
         </section>
 
@@ -84,25 +88,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td>BA123</td>
-                            <td>Londyn Heathrow</td>
-                            <td>14:30</td>
-                            <td>A12</td>
-                            <td><span class="status boarding">Boarding</span></td>
-                        </tr>
-                        <tr>
-                            <td>LH456</td>
-                            <td>Frankfurt</td>
-                            <td>14:45</td>
-                            <td>B04</td>
-                            <td><span class="status on-time">O czasie</span></td>
-                        </tr>
-                        <tr>
-                            <td>KL321</td>
-                            <td>Amsterdam</td>
-                            <td>15:15</td>
-                            <td>B11</td>
-                            <td><span class="status delayed">Opóźniony</span></td>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Nie znaleziono lotów spełniających podane kryteria.</td>
                         </tr>
                     {% endif %}
                 </tbody>
