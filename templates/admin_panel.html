@@ -30,10 +30,9 @@
     <div class="admin-container">
         <aside class="admin-sidebar">
             <ul class="sidebar-menu">
-                <li class="active"><a href="/admin">📊 Pulpit (Dashboard)</a></li>
-                <li><a href="/admin/loty">✈️ Zarządzaj Lotami</a></li>
-                <li><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
-                <li><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
+                <li class="{% if active_tab == 'dashboard' %}active{% endif %}"><a href="/admin">📊 Pulpit / Loty</a></li>
+                <li class="{% if active_tab == 'uzytkownicy' %}active{% endif %}"><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
+                <li class="{% if active_tab == 'rezerwacje' %}active{% endif %}"><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
             </ul>
         </aside>
 
@@ -68,8 +67,16 @@
                                     <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
                                     <td class="action-cell">
                                         <a href="/admin/edytuj/{{ lot.id }}" class="action-btn edit-btn">Edytuj</a>
-                                        <form action="/admin/zmien_status/{{ lot.id }}" method="POST" style="display:inline;">
-                                            <button type="submit" class="action-btn status-btn">Zmień Status</button>
+                                        
+                                        <form action="/admin/zmien_status/{{ lot.id }}" method="POST" style="display:flex; gap:5px; align-items:center; margin:0;">
+                                            <select name="nowy_status" style="padding: 5px; border-radius: 4px; border: 1px solid #cbd5e0;">
+                                                <option value="O czasie" {% if lot.status == 'O czasie' %}selected{% endif %}>O czasie</option>
+                                                <option value="Opóźniony" {% if lot.status == 'Opóźniony' %}selected{% endif %}>Opóźniony</option>
+                                                <option value="Boarding" {% if lot.status == 'Boarding' %}selected{% endif %}>Boarding</option>
+                                                <option value="Odprawa" {% if lot.status == 'Odprawa' %}selected{% endif %}>Odprawa</option>
+                                                <option value="Odwołany" {% if lot.status == 'Odwołany' %}selected{% endif %}>Odwołany</option>
+                                            </select>
+                                            <button type="submit" class="action-btn status-btn">Zapisz</button>
                                         </form>
                                     </td>
                                 </tr>
