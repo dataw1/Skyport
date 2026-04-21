@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Dodaj Użytkownika</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/admin_panel.css">
+</head>
+<body class="admin-body">
+    <header class="navbar">
+        <div class="logo"><span class="icon">✈️</span> <a href="/">SkyPort</a></div>
+        <div class="nav-actions">
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+            <a href="/admin/uzytkownicy" class="btn-yellow" style="margin-right: 10px;">⚙️ Wróć do Użytkowników</a>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <main class="admin-main" style="max-width: 600px; margin: 0 auto;">
+            <div class="admin-content-section" style="margin-top: 40px;">
+                <h2>Dodaj Nowego Użytkownika</h2>
+                
+                <form action="/admin/dodaj_uzytkownika" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <label style="font-weight: bold; color: #1a365d;">Imię</label>
+                            <input type="text" name="imie" required placeholder="np. Jan" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <label style="font-weight: bold; color: #1a365d;">Nazwisko</label>
+                            <input type="text" name="nazwisko" required placeholder="np. Kowalski" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label style="font-weight: bold; color: #1a365d;">Adres Email (Login)</label>
+                        <input type="email" name="email" required placeholder="jan@skyport.pl" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                    </div>
+
+                    <div style="display: flex; gap: 15px;">
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <label style="font-weight: bold; color: #1a365d;">Hasło startowe</label>
+                            <input type="password" name="haslo" required placeholder="••••••••" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <label style="font-weight: bold; color: #1a365d;">Rola w systemie</label>
+                            <select name="rola" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; background: white;">
+                                <option value="pasazer">Pasażer</option>
+                                <option value="pracownik">Pracownik lotniska</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" style="margin-top: 15px; padding: 15px; background: #ecc94b; color: #1a365d; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                        Utwórz Konto Użytkownika
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

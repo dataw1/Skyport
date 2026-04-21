@@ -3,6 +3,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2.extras import RealDictCursor
 import math
+from typing import Optional
+from app.security import get_current_user, pwd_context
 
 from app.database import get_db_connection
 from app.security import get_current_user
@@ -59,28 +61,111 @@ async def panel_admina(request: Request, page: int = 1):
     return templates.TemplateResponse(request=request, name="admin_panel.html", context={"request": request, "user": user, "loty": loty_do_wyswietlenia, "current_page": page, "total_pages": total_pages, "page_range": page_range, "active_tab": "dashboard"})
 
 @router.get("/uzytkownicy", response_class=HTMLResponse)
-async def admin_uzytkownicy(request: Request):
+async def admin_uzytkownicy(
+    request: Request, 
+    page: int = 1,
+    szukaj: Optional[str] = None,
+    rola: Optional[str] = None
+):
     user = get_current_user(request)
     if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
 
     conn = get_db_connection()
     uzytkownicy = []
+    total_pages = 1
+    items_per_page = 10
+    page_range = []
+
+    search_query = f"&szukaj={szukaj or ''}&rola={rola or ''}"
+
     if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
-            # Pobieramy dane z tabeli Konta i łączymy z tabelą Pasazerowie (aby mieć imię i nazwisko)
-            cur.execute("""
+            query_conditions = "WHERE 1=1"
+            params = []
+
+            if szukaj:
+                query_conditions += " AND (k.email ILIKE %s OR p.imie ILIKE %s OR p.nazwisko ILIKE %s)"
+                params.extend([f"%{szukaj}%", f"%{szukaj}%", f"%{szukaj}%"])
+
+            if rola:
+                query_conditions += " AND k.rola = %s"
+                params.append(rola)
+
+            count_query = f"""
+                SELECT COUNT(*) as total 
+                FROM Konta k 
+                LEFT JOIN Pasazerowie p ON k.id_konta = p.id_konta 
+                {query_conditions}
+            """
+            cur.execute(count_query, tuple(params))
+            total_items = cur.fetchone()['total']
+            
+            total_pages = math.ceil(total_items / items_per_page)
+            if page < 1: page = 1
+            if page > total_pages and total_pages > 0: page = total_pages
+            
+            offset = (page - 1) * items_per_page
+            
+            data_query = f"""
                 SELECT k.id_konta, k.email, k.rola, p.imie, p.nazwisko 
                 FROM Konta k 
                 LEFT JOIN Pasazerowie p ON k.id_konta = p.id_konta 
-                ORDER BY k.id_konta DESC LIMIT 50
-            """)
+                {query_conditions}
+                ORDER BY k.id_konta DESC LIMIT %s OFFSET %s
+            """
+            final_params = tuple(params) + (items_per_page, offset)
+            cur.execute(data_query, final_params)
             uzytkownicy = cur.fetchall()
+
         except Exception as e: print(f"Błąd bazy: {e}")
         finally: cur.close(); conn.close()
 
-    return templates.TemplateResponse(request=request, name="admin_uzytkownicy.html", context={"request": request, "user": user, "uzytkownicy": uzytkownicy, "active_tab": "uzytkownicy"})
+    start_page = max(1, page - 1)
+    end_page = min(total_pages, page + 1)
+    if page == 1: end_page = min(total_pages, 3)
+    elif page == total_pages and total_pages >= 3: start_page = total_pages - 2
+    page_range = range(start_page, end_page + 1)
 
+    return templates.TemplateResponse(
+        request=request, name="admin_uzytkownicy.html", 
+        context={"request": request, "user": user, "uzytkownicy": uzytkownicy, "active_tab": "uzytkownicy", "current_page": page, "total_pages": total_pages, "page_range": page_range, "search_query": search_query}
+    )
+
+@router.get("/dodaj_uzytkownika", response_class=HTMLResponse)
+async def dodaj_uzytkownika_get(request: Request):
+    user = get_current_user(request)
+    if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    return templates.TemplateResponse(request=request, name="admin_form_uzytkownik.html", context={"request": request, "user": user})
+
+@router.post("/dodaj_uzytkownika")
+async def dodaj_uzytkownika_post(
+    request: Request, email: str=Form(...), haslo: str=Form(...), 
+    imie: str=Form(...), nazwisko: str=Form(...), rola: str=Form(...)
+):
+    user = get_current_user(request)
+    if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT id_konta FROM Konta WHERE email = %s", (email,))
+        if cur.fetchone():
+            return RedirectResponse(url="/admin/uzytkownicy?error=email_exists", status_code=status.HTTP_302_FOUND)
+
+        haslo_hash = pwd_context.hash(haslo)
+        
+        cur.execute("INSERT INTO Konta (email, haslo, rola) VALUES (%s, %s, %s) RETURNING id_konta", (email, haslo_hash, rola))
+        nowe_id = cur.fetchone()[0]
+        
+        cur.execute("INSERT INTO Pasazerowie (id_konta, imie, nazwisko) VALUES (%s, %s, %s)", (nowe_id, imie, nazwisko))
+        conn.commit()
+    except Exception as e:
+        print(f"Błąd dodawania: {e}")
+        conn.rollback()
+    finally: cur.close(); conn.close()
+    
+    return RedirectResponse(url="/admin/uzytkownicy", status_code=status.HTTP_302_FOUND)
 
 @router.get("/rezerwacje", response_class=HTMLResponse)
 async def admin_rezerwacje(request: Request):

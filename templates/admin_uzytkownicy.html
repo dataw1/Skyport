@@ -9,27 +9,11 @@
 </head>
 <body class="admin-body">
     <header class="navbar">
-        <div class="logo">
-            <span class="icon">✈️</span> <a href="/">SkyPort</a>
-        </div>
-        <nav class="nav-links">
-            <a href="/loty">Loty</a>
-            <a href="/parking">Parking</a>
-            <a href="/mapy">Mapy Terminali</a>
-            <a href="/bezpieczenstwo">Informacje o Bezpieczeństwie</a>
-        </nav>
+        <div class="logo"><span class="icon">✈️</span> <a href="/">SkyPort</a></div>
         <div class="nav-actions">
-            {% if user %}
-                <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
-                {% if user.rola == 'admin' %}
-                    <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
-                {% endif %}
-                <a href="/wyloguj" class="btn-outline">Wyloguj</a>
-            {% else %}
-                <a href="/logowanie" class="btn-outline">Logowanie</a>
-            {% endif %}
-            <button class="lang-btn">🌐 PL</button>
-            <a href="/pomoc" class="help-link">❓ Centrum Pomocy</a>
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+            <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
+            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
         </div>
     </header>
 
@@ -45,7 +29,28 @@
         <main class="admin-main">
             <div class="admin-header">
                 <h1>Zarządzanie Użytkownikami</h1>
+                <a href="/admin/dodaj_uzytkownika" class="btn-yellow" style="text-decoration: none;">+ Dodaj Użytkownika</a>
             </div>
+
+            <form action="/admin/uzytkownicy" method="GET" class="search-form" style="background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; gap: 15px; align-items: flex-end;">
+                <div class="input-group" style="flex: 2;">
+                    <label style="font-size: 13px;">Szukaj (Email / Imię / Nazwisko)</label>
+                    <input type="text" name="szukaj" placeholder="Wpisz frazę..." value="{{ request.query_params.get('szukaj', '') }}" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; width: 100%;">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label style="font-size: 13px;">Filtruj wg. Roli</label>
+                    <select name="rola" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; width: 100%; background: white;">
+                        <option value="">Wszystkie role</option>
+                        <option value="admin" {% if request.query_params.get('rola') == 'admin' %}selected{% endif %}>Admin</option>
+                        <option value="pracownik" {% if request.query_params.get('rola') == 'pracownik' %}selected{% endif %}>Pracownik</option>
+                        <option value="pasazer" {% if request.query_params.get('rola') == 'pasazer' %}selected{% endif %}>Pasażer</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="padding: 10px 20px;">Szukaj</button>
+                {% if request.query_params.get('szukaj') or request.query_params.get('rola') %}
+                    <a href="/admin/uzytkownicy" class="btn-outline" style="padding: 10px 15px; text-decoration: none; color: #e53e3e; border-color: #e53e3e;">✖ Wyczyść</a>
+                {% endif %}
+            </form>
 
             <section class="admin-content-section">
                 <h2>Lista Zarejestrowanych Kont</h2>
@@ -70,10 +75,30 @@
                                 </tr>
                                 {% endfor %}
                             {% else %}
-                                <tr><td colspan="4" style="text-align: center;">Brak użytkowników.</td></tr>
+                                <tr><td colspan="4" style="text-align: center; padding: 20px;">Brak użytkowników spełniających kryteria.</td></tr>
                             {% endif %}
                         </tbody>
                     </table>
+
+                    {% if total_pages > 1 %}
+                    <div class="pagination">
+                        {% if current_page > 1 %}
+                            <a href="/admin/uzytkownicy?page={{ current_page - 1 }}{{ search_query }}" class="page-link">&laquo;</a>
+                        {% endif %}
+
+                        {% for p in page_range %}
+                            {% if p == current_page %}
+                                <span class="page-link active">{{ p }}</span>
+                            {% else %}
+                                <a href="/admin/uzytkownicy?page={{ p }}{{ search_query }}" class="page-link">{{ p }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if current_page < total_pages %}
+                            <a href="/admin/uzytkownicy?page={{ current_page + 1 }}{{ search_query }}" class="page-link">&raquo;</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
             </section>
         </main>
