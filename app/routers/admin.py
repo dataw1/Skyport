@@ -4,10 +4,9 @@ from fastapi.templating import Jinja2Templates
 from psycopg2.extras import RealDictCursor
 import math
 from typing import Optional
-from app.security import get_current_user, pwd_context
 
 from app.database import get_db_connection
-from app.security import get_current_user
+from app.security import get_current_user, pwd_context
 
 router = APIRouter(prefix="/admin", tags=["Administrator"])
 templates = Jinja2Templates(directory="templates")
@@ -15,7 +14,8 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/", response_class=HTMLResponse)
 async def panel_admina(request: Request, page: int = 1):
     user = get_current_user(request)
-    if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    if not user or user.get("rola") != "admin": 
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
         
     conn = get_db_connection()
     loty_do_wyswietlenia = []
@@ -29,6 +29,7 @@ async def panel_admina(request: Request, page: int = 1):
             cur.execute("SELECT COUNT(*) as total FROM Loty")
             total_items = cur.fetchone()['total']
             total_pages = math.ceil(total_items / items_per_page)
+            
             if page < 1: page = 1
             if page > total_pages and total_pages > 0: page = total_pages
             
@@ -45,8 +46,13 @@ async def panel_admina(request: Request, page: int = 1):
                 
                 planowo_str = lot['planowo'].strftime('%Y-%m-%d %H:%M') if lot.get('planowo') else 'Brak'
                 loty_do_wyswietlenia.append({
-                    "id": lot.get('id_lotu', 1), "numer_lotu": lot.get('numer_lotu', 'Brak'), "kierunek": lot.get('kierunek', 'Brak'),
-                    "planowo": planowo_str, "bramka": lot.get('bramka', '-'), "status": obecny_status, "status_css": status_css
+                    "id": lot.get('id_lotu', 1), 
+                    "numer_lotu": lot.get('numer_lotu', 'Brak'), 
+                    "kierunek": lot.get('kierunek', 'Brak'),
+                    "planowo": planowo_str, 
+                    "bramka": lot.get('bramka', '-'), 
+                    "status": obecny_status, 
+                    "status_css": status_css
                 })
         finally:
             cur.close()
@@ -58,7 +64,10 @@ async def panel_admina(request: Request, page: int = 1):
     elif page == total_pages and total_pages >= 3: start_page = total_pages - 2
     page_range = range(start_page, end_page + 1)
 
-    return templates.TemplateResponse(request=request, name="admin_panel.html", context={"request": request, "user": user, "loty": loty_do_wyswietlenia, "current_page": page, "total_pages": total_pages, "page_range": page_range, "active_tab": "dashboard"})
+    return templates.TemplateResponse(
+        request=request, name="admin_panel.html", 
+        context={"request": request, "user": user, "loty": loty_do_wyswietlenia, "current_page": page, "total_pages": total_pages, "page_range": page_range, "active_tab": "dashboard"}
+    )
 
 @router.get("/uzytkownicy", response_class=HTMLResponse)
 async def admin_uzytkownicy(
@@ -68,14 +77,13 @@ async def admin_uzytkownicy(
     rola: Optional[str] = None
 ):
     user = get_current_user(request)
-    if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    if not user or user.get("rola") != "admin": 
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
 
     conn = get_db_connection()
     uzytkownicy = []
     total_pages = 1
     items_per_page = 10
-    page_range = []
-
     search_query = f"&szukaj={szukaj or ''}&rola={rola or ''}"
 
     if conn:
@@ -85,17 +93,19 @@ async def admin_uzytkownicy(
             params = []
 
             if szukaj:
-                query_conditions += " AND (k.email ILIKE %s OR p.imie ILIKE %s OR p.nazwisko ILIKE %s)"
-                params.extend([f"%{szukaj}%", f"%{szukaj}%", f"%{szukaj}%"])
+                query_conditions += " AND (k.email ILIKE %s OR p.imie ILIKE %s OR p.nazwisko ILIKE %s OR pr.imie ILIKE %s OR pr.nazwisko ILIKE %s)"
+                params.extend([f"%{szukaj}%", f"%{szukaj}%", f"%{szukaj}%", f"%{szukaj}%", f"%{szukaj}%"])
 
             if rola:
                 query_conditions += " AND k.rola = %s"
                 params.append(rola)
 
+            # Liczenie całkowitej liczby wyników 
             count_query = f"""
                 SELECT COUNT(*) as total 
                 FROM Konta k 
                 LEFT JOIN Pasazerowie p ON k.id_konta = p.id_konta 
+                LEFT JOIN Pracownicy pr ON k.id_konta = pr.id_konta
                 {query_conditions}
             """
             cur.execute(count_query, tuple(params))
@@ -107,10 +117,14 @@ async def admin_uzytkownicy(
             
             offset = (page - 1) * items_per_page
             
+            # Pobieranie danych z użyciem COALESCE dla imion i nazwisk 
             data_query = f"""
-                SELECT k.id_konta, k.email, k.rola, p.imie, p.nazwisko 
+                SELECT k.id_konta, k.email, k.rola, 
+                       COALESCE(p.imie, pr.imie) AS imie, 
+                       COALESCE(p.nazwisko, pr.nazwisko) AS nazwisko 
                 FROM Konta k 
                 LEFT JOIN Pasazerowie p ON k.id_konta = p.id_konta 
+                LEFT JOIN Pracownicy pr ON k.id_konta = pr.id_konta
                 {query_conditions}
                 ORDER BY k.id_konta DESC LIMIT %s OFFSET %s
             """
@@ -144,7 +158,8 @@ async def dodaj_uzytkownika_post(
     imie: str=Form(...), nazwisko: str=Form(...), rola: str=Form(...)
 ):
     user = get_current_user(request)
-    if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    if not user or user.get("rola") != "admin": 
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     
     conn = get_db_connection()
     cur = conn.cursor()
@@ -154,18 +169,30 @@ async def dodaj_uzytkownika_post(
             return RedirectResponse(url="/admin/uzytkownicy?error=email_exists", status_code=status.HTTP_302_FOUND)
 
         haslo_hash = pwd_context.hash(haslo)
-        
+
         cur.execute("INSERT INTO Konta (email, haslo, rola) VALUES (%s, %s, %s) RETURNING id_konta", (email, haslo_hash, rola))
         nowe_id = cur.fetchone()[0]
         
-        cur.execute("INSERT INTO Pasazerowie (id_konta, imie, nazwisko) VALUES (%s, %s, %s)", (nowe_id, imie, nazwisko))
+        if rola == 'pasazer':
+            cur.execute("INSERT INTO Pasazerowie (id_konta, imie, nazwisko) VALUES (%s, %s, %s)", (nowe_id, imie, nazwisko))
+        elif rola in ['pracownik', 'admin']:
+            stanowisko = "Administrator" if rola == 'admin' else "Nowy Pracownik"
+
+            cur.execute(
+                "INSERT INTO Pracownicy (id_konta, imie, nazwisko, stanowisko) VALUES (%s, %s, %s, %s)", 
+                (nowe_id, imie, nazwisko, stanowisko)
+            )
+
         conn.commit()
     except Exception as e:
         print(f"Błąd dodawania: {e}")
         conn.rollback()
-    finally: cur.close(); conn.close()
+    finally: 
+        cur.close() 
+        conn.close()
     
     return RedirectResponse(url="/admin/uzytkownicy", status_code=status.HTTP_302_FOUND)
+
 
 @router.get("/rezerwacje", response_class=HTMLResponse)
 async def admin_rezerwacje(request: Request):
@@ -195,6 +222,7 @@ async def admin_rezerwacje(request: Request):
 async def admin_zmien_status(request: Request, id_lotu: int, nowy_status: str = Form(...)):
     user = get_current_user(request)
     if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    
     conn = get_db_connection()
     cur = conn.cursor()
     try:
@@ -202,6 +230,7 @@ async def admin_zmien_status(request: Request, id_lotu: int, nowy_status: str = 
         conn.commit()
     except Exception: conn.rollback()
     finally: cur.close(); conn.close()
+    
     referer = request.headers.get("referer", "/admin")
     return RedirectResponse(url=referer, status_code=status.HTTP_302_FOUND)
 
