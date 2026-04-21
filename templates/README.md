@@ -14,4 +14,4 @@ py -m pip install jinja2 psycopg2
 py -m pip install passlib python-multipart PyJWT
 py -m pip install bcrypt==3.2.2
 
-py -m uvicorn main:app --reload
+py -m uvicorn app.main:app --reload
