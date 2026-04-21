@@ -13,6 +13,6 @@ py -m pip install bcrypt==3.2.2
 # Instalacja obsługi zmiennych środowiskowych (.env)
 py -m pip install python-dotenv
 
-py -m uvicorn app.main:app --reload
-
 # SKOPIUJ plik .env.example, zmień jego nazwę na .env i uzupełnij w nim swoje dane logowania do bazy!
+
+py -m uvicorn app.main:app --reload
