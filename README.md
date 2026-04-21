@@ -1,9 +1,5 @@
 # Skyport
 
-W pliku trzeba wpisać tą komendę
-pip install fastapi uvicorn psycopg2-binary passlib bcrypt pyjwt jinja2 python-multipart
-
-
 # Instalacja FastAPI i serwera
 py -m pip install fastapi uvicorn[standard]
 
@@ -14,4 +10,9 @@ py -m pip install jinja2 psycopg2
 py -m pip install passlib python-multipart PyJWT
 py -m pip install bcrypt==3.2.2
 
+# Instalacja obsługi zmiennych środowiskowych (.env)
+py -m pip install python-dotenv
+
 py -m uvicorn app.main:app --reload
+
+# SKOPIUJ plik .env.example, zmień jego nazwę na .env i uzupełnij w nim swoje dane logowania do bazy!

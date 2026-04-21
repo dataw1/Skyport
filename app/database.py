@@ -1,15 +1,24 @@
+import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from app.security import pwd_context
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DB_NAME = os.getenv("DB_NAME", "postgres")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "admin")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
 
 def get_db_connection():
     try:
         conn = psycopg2.connect(
-            dbname="postgres",   # Zmień na nazwę swojej bazy
-            user="postgres",     # Zmień na swojego usera
-            password="admin",    # Zmień na swoje hasło
-            host="localhost",
-            port="5432"
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
         )
         return conn
     except Exception as e:
@@ -17,6 +26,8 @@ def get_db_connection():
         return None
 
 def utworz_admina_przy_starcie():
+    from app.security import pwd_context 
+    
     conn = get_db_connection()
     if not conn:
         print("Błąd: Nie można połączyć się z bazą danych przy starcie.")
