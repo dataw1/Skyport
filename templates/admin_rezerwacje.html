@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Rezerwacje</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/admin_panel.css">
+</head>
+<body class="admin-body">
+    <header class="navbar">
+        <div class="logo"><span class="icon">✈️</span> <a href="/">SkyPort</a></div>
+        <div class="nav-actions">
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <ul class="sidebar-menu">
+                <li class="{% if active_tab == 'dashboard' %}active{% endif %}"><a href="/admin">📊 Pulpit / Loty</a></li>
+                <li class="{% if active_tab == 'uzytkownicy' %}active{% endif %}"><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
+                <li class="{% if active_tab == 'rezerwacje' %}active{% endif %}"><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1>Zarządzanie Rezerwacjami</h1>
+            </div>
+
+            <section class="admin-content-section">
+                <h2>Ostatnie Rezerwacje Lotów</h2>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>PNR (Kod)</th>
+                                <th>Użytkownik (Email)</th>
+                                <th>Nr Lotu</th>
+                                <th>Data Rezerwacji</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if rezerwacje %}
+                                {% for r in rezerwacje %}
+                                <tr>
+                                    <td style="font-weight: bold;">{{ r.pnr }}</td>
+                                    <td>{{ r.email or 'Brak konta' }}</td>
+                                    <td>{{ r.numer_lotu or 'Nieznany' }}</td>
+                                    <td>{{ r.data_rezerwacji.strftime('%Y-%m-%d %H:%M') if r.data_rezerwacji else '-' }}</td>
+                                    <td><span style="padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e0;">{{ r.status }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="5" style="text-align: center; padding: 20px;">Brak rezerwacji w systemie.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

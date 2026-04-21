@@ -56,13 +56,60 @@ async def panel_admina(request: Request, page: int = 1):
     elif page == total_pages and total_pages >= 3: start_page = total_pages - 2
     page_range = range(start_page, end_page + 1)
 
-    return templates.TemplateResponse(request=request, name="admin_panel.html", context={"request": request, "user": user, "loty": loty_do_wyswietlenia, "current_page": page, "total_pages": total_pages, "page_range": page_range})
+    return templates.TemplateResponse(request=request, name="admin_panel.html", context={"request": request, "user": user, "loty": loty_do_wyswietlenia, "current_page": page, "total_pages": total_pages, "page_range": page_range, "active_tab": "dashboard"})
+
+@router.get("/uzytkownicy", response_class=HTMLResponse)
+async def admin_uzytkownicy(request: Request):
+    user = get_current_user(request)
+    if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+
+    conn = get_db_connection()
+    uzytkownicy = []
+    if conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        try:
+            # Pobieramy dane z tabeli Konta i łączymy z tabelą Pasazerowie (aby mieć imię i nazwisko)
+            cur.execute("""
+                SELECT k.id_konta, k.email, k.rola, p.imie, p.nazwisko 
+                FROM Konta k 
+                LEFT JOIN Pasazerowie p ON k.id_konta = p.id_konta 
+                ORDER BY k.id_konta DESC LIMIT 50
+            """)
+            uzytkownicy = cur.fetchall()
+        except Exception as e: print(f"Błąd bazy: {e}")
+        finally: cur.close(); conn.close()
+
+    return templates.TemplateResponse(request=request, name="admin_uzytkownicy.html", context={"request": request, "user": user, "uzytkownicy": uzytkownicy, "active_tab": "uzytkownicy"})
+
+
+@router.get("/rezerwacje", response_class=HTMLResponse)
+async def admin_rezerwacje(request: Request):
+    user = get_current_user(request)
+    if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+
+    conn = get_db_connection()
+    rezerwacje = []
+    if conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        try:
+            cur.execute("""
+                SELECT r.id_rezerwacji, r.pnr, r.status, r.data_rezerwacji, k.email, l.numer_lotu 
+                FROM Rezerwacje_Lotow r
+                LEFT JOIN Konta k ON r.id_konta = k.id_konta
+                LEFT JOIN Loty l ON r.id_lotu = l.id_lotu
+                ORDER BY r.data_rezerwacji DESC LIMIT 50
+            """)
+            rezerwacje = cur.fetchall()
+        except Exception as e: print(f"Błąd bazy: {e}")
+        finally: cur.close(); conn.close()
+
+    return templates.TemplateResponse(request=request, name="admin_rezerwacje.html", context={"request": request, "user": user, "rezerwacje": rezerwacje, "active_tab": "rezerwacje"})
+
 
 @router.post("/zmien_status/{id_lotu}")
 async def admin_zmien_status(request: Request, id_lotu: int, nowy_status: str = Form(...)):
     user = get_current_user(request)
     if not user or user.get("rola") != "admin": return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-    
     conn = get_db_connection()
     cur = conn.cursor()
     try:
@@ -70,7 +117,6 @@ async def admin_zmien_status(request: Request, id_lotu: int, nowy_status: str = 
         conn.commit()
     except Exception: conn.rollback()
     finally: cur.close(); conn.close()
-    
     referer = request.headers.get("referer", "/admin")
     return RedirectResponse(url=referer, status_code=status.HTTP_302_FOUND)
 
@@ -103,7 +149,6 @@ async def edytuj_lot_get(request: Request, id_lotu: int):
         cur.execute("SELECT * FROM Loty WHERE id_lotu = %s", (id_lotu,))
         lot = cur.fetchone()
     finally: cur.close(); conn.close()
-        
     if not lot: return RedirectResponse(url="/admin", status_code=status.HTTP_302_FOUND)
     if lot.get('planowo'): lot['planowo_format'] = lot['planowo'].strftime('%Y-%m-%dT%H:%M')
     return templates.TemplateResponse(request=request, name="admin_form_lot.html", context={"request": request, "user": user, "akcja": "edytuj", "lot": lot})

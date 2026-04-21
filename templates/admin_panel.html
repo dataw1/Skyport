@@ -30,10 +30,9 @@
     <div class="admin-container">
         <aside class="admin-sidebar">
             <ul class="sidebar-menu">
-                <li class="active"><a href="/admin">📊 Pulpit (Dashboard)</a></li>
-                <li><a href="/admin/loty">✈️ Zarządzaj Lotami</a></li>
-                <li><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
-                <li><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
+                <li class="{% if active_tab == 'dashboard' %}active{% endif %}"><a href="/admin">📊 Pulpit / Loty</a></li>
+                <li class="{% if active_tab == 'uzytkownicy' %}active{% endif %}"><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
+                <li class="{% if active_tab == 'rezerwacje' %}active{% endif %}"><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
             </ul>
         </aside>
 

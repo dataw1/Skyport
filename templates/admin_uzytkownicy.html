@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Użytkownicy</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/admin_panel.css">
+</head>
+<body class="admin-body">
+    <header class="navbar">
+        <div class="logo"><span class="icon">✈️</span> <a href="/">SkyPort</a></div>
+        <div class="nav-actions">
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <ul class="sidebar-menu">
+                <li class="{% if active_tab == 'dashboard' %}active{% endif %}"><a href="/admin">📊 Pulpit / Loty</a></li>
+                <li class="{% if active_tab == 'uzytkownicy' %}active{% endif %}"><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
+                <li class="{% if active_tab == 'rezerwacje' %}active{% endif %}"><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1>Zarządzanie Użytkownikami</h1>
+            </div>
+
+            <section class="admin-content-section">
+                <h2>Lista Zarejestrowanych Kont</h2>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Adres Email</th>
+                                <th>Imię i Nazwisko</th>
+                                <th>Rola</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if uzytkownicy %}
+                                {% for u in uzytkownicy %}
+                                <tr>
+                                    <td>{{ u.id_konta }}</td>
+                                    <td>{{ u.email }}</td>
+                                    <td>{{ u.imie or '-' }} {{ u.nazwisko or '-' }}</td>
+                                    <td><span class="role-badge {% if u.rola == 'admin' %}role-admin{% else %}role-user{% endif %}">{{ u.rola|upper }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="4" style="text-align: center;">Brak użytkowników.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

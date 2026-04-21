@@ -139,3 +139,20 @@
     cursor: default;
     pointer-events: none;
 }
+
+.role-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.role-admin {
+    background-color: #fed7d7;
+    color: #c53030;
+}
+
+.role-user {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
