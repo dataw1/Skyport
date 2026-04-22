@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, Request, status, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2.extras import RealDictCursor
@@ -17,33 +17,40 @@ async def panel_pracownika(request: Request):
         
     conn = get_db_connection()
     loty = []
-    
     if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        try:
-            cur.execute("SELECT * FROM Loty ORDER BY planowo ASC LIMIT 20")
-            loty_db = cur.fetchall()
+        cur.execute("SELECT * FROM Loty ORDER BY planowo ASC")
+        loty_db = cur.fetchall()
+        for lot in loty_db:
+            status_css = "on-time"
+            obecny_status = str(lot.get('status', 'O czasie'))
+            if obecny_status.lower() == 'opóźniony': status_css = "delayed"
+            elif obecny_status.lower() == 'boarding': status_css = "boarding"
             
-            for lot in loty_db:
-                status_css = "on-time"
-                obecny_status = str(lot.get('status', 'O czasie'))
-                if obecny_status.lower() == 'opóźniony': status_css = "delayed"
-                elif obecny_status.lower() == 'boarding': status_css = "boarding"
-                
-                loty.append({
-                    "numer_lotu": lot['numer_lotu'],
-                    "kierunek": lot['kierunek'],
-                    "planowo": lot['planowo'].strftime('%H:%M'),
-                    "bramka": lot['bramka'],
-                    "status": obecny_status,
-                    "status_css": status_css
-                })
-        finally:
-            cur.close()
-            conn.close()
+            loty.append({
+                "id_lotu": lot['id_lotu'], 
+                "numer_lotu": lot['numer_lotu'],
+                "kierunek": lot['kierunek'],
+                "planowo": lot['planowo'].strftime('%H:%M') if lot['planowo'] else "00:00",
+                "bramka": lot['bramka'],
+                "status": obecny_status,
+                "status_css": status_css
+            })
+        cur.close()
+        conn.close()
 
     return templates.TemplateResponse(
-        request=request, 
-        name="pracownik_panel.html", 
-        context={"request": request, "user": user, "loty": loty}
-    )
+    request=request, 
+    name="pracownik_panel.html", 
+    context={"user": user, "loty": loty}
+)
+
+@router.post("/zmien_status/{id_lotu}")
+async def pracownik_zmien_status(id_lotu: int, nowy_status: str = Form(...)):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE Loty SET status = %s WHERE id_lotu = %s", (nowy_status, id_lotu))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return RedirectResponse(url="/pracownik", status_code=status.HTTP_302_FOUND)
