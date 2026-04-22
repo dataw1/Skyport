@@ -20,7 +20,7 @@ async def strona_glowna(request: Request, kierunek: Optional[str] = None, data: 
     if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
-            query = "SELECT * FROM Loty WHERE 1=1"
+            query = "SELECT * FROM Loty WHERE planowo >= NOW() - INTERVAL '2 hours'"
             params = []
             if kierunek:
                 query += " AND kierunek ILIKE %s"

@@ -321,3 +321,22 @@ async def usun_uzytkownika(request: Request, id_konta: int):
             conn.close()
             
     return RedirectResponse(url="/admin/uzytkownicy", status_code=status.HTTP_302_FOUND)
+
+@router.post("/usun_lot/{id_lotu}")
+async def usun_lot(request: Request, id_lotu: int):
+    user = get_current_user(request)
+    if not user or user.get("rola") != "admin":
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    
+    conn = get_db_connection()
+    if conn:
+        cur = conn.cursor()
+        try:
+            # Rezerwacje lotów zostaną usunięte automatycznie dzięki ON DELETE CASCADE
+            cur.execute("DELETE FROM Loty WHERE id_lotu = %s", (id_lotu,))
+            conn.commit()
+        finally:
+            cur.close()
+            conn.close()
+    
+    return RedirectResponse(url="/admin", status_code=status.HTTP_302_FOUND)

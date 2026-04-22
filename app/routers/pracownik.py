@@ -10,40 +10,64 @@ router = APIRouter(prefix="/pracownik", tags=["Pracownik"])
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def panel_pracownika(request: Request):
+async def panel_pracownika(request: Request, page: int = 1):
     user = get_current_user(request)
     if not user or user.get("rola") not in ["admin", "pracownik"]:
         return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
         
     conn = get_db_connection()
     loty = []
+    total_pages = 1
+    items_per_page = 10
+    page_range = []
+    
     if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM Loty ORDER BY planowo ASC")
-        loty_db = cur.fetchall()
-        for lot in loty_db:
-            status_css = "on-time"
-            obecny_status = str(lot.get('status', 'O czasie'))
-            if obecny_status.lower() == 'opóźniony': status_css = "delayed"
-            elif obecny_status.lower() == 'boarding': status_css = "boarding"
+        try:
+            cur.execute("SELECT COUNT(*) as total FROM Loty")
+            total_items = cur.fetchone()['total']
+            import math
+            total_pages = math.ceil(total_items / items_per_page)
             
-            loty.append({
-                "id_lotu": lot['id_lotu'], 
-                "numer_lotu": lot['numer_lotu'],
-                "kierunek": lot['kierunek'],
-                "planowo": lot['planowo'].strftime('%H:%M') if lot['planowo'] else "00:00",
-                "bramka": lot['bramka'],
-                "status": obecny_status,
-                "status_css": status_css
-            })
-        cur.close()
-        conn.close()
+            if page < 1: page = 1
+            offset = (page - 1) * items_per_page
+            
+            cur.execute("SELECT * FROM Loty ORDER BY planowo ASC LIMIT %s OFFSET %s", (items_per_page, offset))
+            loty_db = cur.fetchall()
+            
+            for lot in loty_db:
+                status_css = "on-time"
+                obecny_status = str(lot.get('status', 'O czasie'))
+                if obecny_status.lower() == 'opóźniony': status_css = "delayed"
+                elif obecny_status.lower() == 'boarding': status_css = "boarding"
+                
+                loty.append({
+                    "id_lotu": lot['id_lotu'],
+                    "numer_lotu": lot['numer_lotu'],
+                    "kierunek": lot['kierunek'],
+                    "planowo": lot['planowo'].strftime('%H:%M') if lot['planowo'] else "00:00",
+                    "bramka": lot['bramka'],
+                    "status": obecny_status,
+                    "status_css": status_css
+                })
+                
+            page_range = list(range(1, total_pages + 1))
+            
+        finally:
+            cur.close()
+            conn.close()
 
     return templates.TemplateResponse(
-    request=request, 
-    name="pracownik_panel.html", 
-    context={"user": user, "loty": loty}
-)
+        request=request, 
+        name="pracownik_panel.html", 
+        context={
+            "user": user, 
+            "loty": loty,
+            "total_pages": total_pages,  
+            "current_page": page,       
+            "page_range": page_range    
+        }
+    )
 
 @router.post("/zmien_status/{id_lotu}")
 async def pracownik_zmien_status(id_lotu: int, nowy_status: str = Form(...)):

@@ -65,7 +65,18 @@
                                             <small style="color: #718096;">{{ lot.planowo }}</small>
                                         </div>
                                     </td>
-                                    
+                                    <td>
+                                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                                        <a href="/admin/edytuj/{{ lot.id }}" class="action-btn edit-btn">Pełna Edycja</a>
+                                        
+                                        <form action="/admin/usun_lot/{{ lot.id }}" method="POST" 
+                                            onsubmit="return confirm('Czy na pewno chcesz usunąć ten lot i wszystkie powiązane z nim rezerwacje?');">
+                                            <button type="submit" class="action-btn" style="background: #e53e3e; color: white; border: none; width: 100%;">
+                                                Usuń Lot
+                                            </button>
+                                        </form>
+                                    </div>
+                                    </td>
                                     <td>
                                         <form action="/admin/zmien_bramke/{{ lot.id }}" method="POST" class="inline-form">
                                             <select name="nowa_bramka">
