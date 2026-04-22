@@ -297,3 +297,27 @@ async def admin_zmien_bramke(request: Request, id_lotu: int, nowa_bramka: str = 
     
     referer = request.headers.get("referer", "/admin")
     return RedirectResponse(url=referer, status_code=status.HTTP_302_FOUND)
+
+@router.post("/uzytkownicy/usun/{id_konta}")
+async def usun_uzytkownika(request: Request, id_konta: int):
+    user = get_current_user(request)
+    if not user or user.get("rola") != "admin":
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    
+    if user.get("id") == id_konta:
+        return RedirectResponse(url="/admin/uzytkownicy?error=self_delete", status_code=status.HTTP_302_FOUND)
+
+    conn = get_db_connection()
+    if conn:
+        cur = conn.cursor()
+        try:
+            cur.execute("DELETE FROM Konta WHERE id_konta = %s", (id_konta,))
+            conn.commit()
+        except Exception as e:
+            print(f"Błąd usuwania: {e}")
+            conn.rollback()
+        finally:
+            cur.close()
+            conn.close()
+            
+    return RedirectResponse(url="/admin/uzytkownicy", status_code=status.HTTP_302_FOUND)

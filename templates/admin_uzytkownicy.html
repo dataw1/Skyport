@@ -62,6 +62,7 @@
                                 <th>Adres Email</th>
                                 <th>Imię i Nazwisko</th>
                                 <th>Rola</th>
+                                <th>Akcje</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -71,11 +72,27 @@
                                     <td>{{ u.id_konta }}</td>
                                     <td>{{ u.email }}</td>
                                     <td>{{ u.imie or '-' }} {{ u.nazwisko or '-' }}</td>
-                                    <td><span class="role-badge {% if u.rola == 'admin' %}role-admin{% else %}role-user{% endif %}">{{ u.rola|upper }}</span></td>
+                                    <td>
+                                        <span class="role-badge {% if u.rola == 'admin' %}role-admin{% else %}role-user{% endif %}">
+                                            {{ u.rola|upper }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if u.id_konta != user.id %}
+                                        <form action="/admin/uzytkownicy/usun/{{ u.id_konta }}" method="POST" 
+                                            onsubmit="return confirm('Czy na pewno chcesz bezpowrotnie usunąć to konto wraz ze wszystkimi danymi?');">
+                                        <button type="submit" class="action-btn" style="background: #e53e3e; color: white; border: none; cursor: pointer; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 12px;">
+                                            Usuń
+                                        </button>
+                                        </form>
+                                        {% else %}
+                                        <span style="font-size: 11px; color: #718096; font-style: italic;">(Twoje konto)</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
-                                <tr><td colspan="4" style="text-align: center; padding: 20px;">Brak użytkowników spełniających kryteria.</td></tr>
+                                <tr><td colspan="5" style="text-align: center; padding: 20px;">Brak użytkowników.</td></tr>
                             {% endif %}
                         </tbody>
                     </table>
@@ -94,7 +111,7 @@
                             {% endif %}
                         {% endfor %}
 
-                        {% if current_page < total_pages %}
+                        {% if current_page <total_pages %}
                             <a href="/admin/uzytkownicy?page={{ current_page + 1 }}{{ search_query }}" class="page-link">&raquo;</a>
                         {% endif %}
                     </div>
@@ -103,5 +120,13 @@
             </section>
         </main>
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error') === 'self_delete') {
+        alert("Błąd: Nie możesz usunąć własnego konta administratora!");
+    }
+});
+    </script>
 </body>
 </html>
