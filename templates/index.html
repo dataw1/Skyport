@@ -25,6 +25,10 @@
             {% if user.rola == 'admin' %}
             <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
             {% endif %}
+            
+            {% if user.rola == 'pracownik' or user.rola == 'admin' %}
+            <a href="/pracownik" class="btn-outline" style="margin-right: 10px;">📋 Panel Pracownika</a>
+            {% endif %}
 
             <a href="/wyloguj" class="btn-outline">Wyloguj</a>
             {% else %}

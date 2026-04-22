@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>SkyPort - Panel Pracownika</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/admin_panel.css">
+</head>
+<body class="admin-body">
+    <header class="navbar">
+        <div class="logo"><span class="icon">✈️</span> <a href="/">SkyPort</a></div>
+            <div class="nav-actions">
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">
+                Witaj drogi pracowniku!
+            </span>
+            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <ul class="sidebar-menu">
+                <li class="active"><a href="/pracownik">📋 Lista Lotów</a></li>
+                <li><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            <h1>Panel Operacyjny Pracownika</h1>
+            <section class="admin-content-section">
+                <h2>Bieżące Loty</h2>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nr Lotu</th>
+                            <th>Kierunek</th>
+                            <th>Godzina</th>
+                            <th>Bramka</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lot in loty %}
+                        <tr>
+                            <td>{{ lot.numer_lotu }}</td>
+                            <td>{{ lot.kierunek }}</td>
+                            <td>{{ lot.planowo }}</td>
+                            <td>{{ lot.bramka }}</td>
+                            <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

@@ -66,7 +66,14 @@ async def logowanie_post(email: str = Form(...), haslo: str = Form(...)):
         cur.close()
         conn.close()
 
-        response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+        if user_db['rola'] == 'admin':
+            cel = "/admin"
+        elif user_db['rola'] == 'pracownik':
+            cel = "/pracownik"
+        else:
+            cel = "/"
+
+        response = RedirectResponse(url=cel, status_code=status.HTTP_302_FOUND)
         response.set_cookie(key="session_token", value=token, httponly=True)
         return response
     
