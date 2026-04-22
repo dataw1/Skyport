@@ -278,3 +278,22 @@ async def edytuj_lot_post(request: Request, id_lotu: int, numer_lotu: str=Form(.
         conn.commit()
     finally: cur.close(); conn.close()
     return RedirectResponse(url="/admin", status_code=status.HTTP_302_FOUND)
+
+@router.post("/zmien_bramke/{id_lotu}")
+async def admin_zmien_bramke(request: Request, id_lotu: int, nowa_bramka: str = Form(...)):
+    user = get_current_user(request)
+    if not user or user.get("rola") != "admin": 
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    
+    conn = get_db_connection()
+    if conn:
+        cur = conn.cursor()
+        try:
+            cur.execute("UPDATE Loty SET bramka = %s WHERE id_lotu = %s", (nowa_bramka, id_lotu))
+            conn.commit()
+        finally:
+            cur.close()
+            conn.close()
+    
+    referer = request.headers.get("referer", "/admin")
+    return RedirectResponse(url=referer, status_code=status.HTTP_302_FOUND)

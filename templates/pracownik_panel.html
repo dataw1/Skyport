@@ -2,17 +2,26 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>SkyPort - Panel Pracownika</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPort - Zarządzanie</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/admin_panel.css">
+    <style>
+        .inline-form-group { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+        .inline-select { padding: 6px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; background: #fff; min-width: 100px; }
+        .btn-ok { padding: 6px 12px; background: #ecc94b; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; }
+        .flight-info-cell { display: flex; flex-direction: column; gap: 4px; }
+        .gate-status-cell { display: flex; flex-direction: column; gap: 12px; }
+    </style>
 </head>
 <body class="admin-body">
     <header class="navbar">
-        <div class="logo"><span class="icon">✈️</span> <a href="/">SkyPort</a></div>
-            <div class="nav-actions">
-            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">
-                Witaj drogi pracowniku!
-            </span>
+        <div class="logo">
+            <span class="icon">✈️</span> <a href="/">SkyPort</a>
+        </div>
+        <div class="nav-actions">
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+            <a href="/pracownik" class="btn-outline" style="margin-right: 10px;">📋 Widok Pracownika</a>
             <a href="/wyloguj" class="btn-outline">Wyloguj</a>
         </div>
     </header>
@@ -20,50 +29,84 @@
     <div class="admin-container">
         <aside class="admin-sidebar">
             <ul class="sidebar-menu">
-                <li class="active"><a href="/pracownik">📋 Lista Lotów</a></li>
+                <li class="active"><a href="/admin">📊 Loty</a></li>
+                <li><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
                 <li><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
             </ul>
         </aside>
 
         <main class="admin-main">
-            <h1>Panel Operacyjny Pracownika</h1>
+            <div class="admin-header">
+                <h1>Zarządzanie Lotami</h1>
+                <a href="/admin/dodaj_lot" class="btn-yellow" style="text-decoration: none;">+ Dodaj Nowy Lot</a>
+            </div>
+
             <section class="admin-content-section">
-                <h2>Bieżące Loty</h2>
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>Nr Lotu</th>
-                            <th>Kierunek</th>
-                            <th>Godzina</th>
-                            <th>Bramka</th>
-                            <th>Status</th>
-                            <th>Zmień Status</th>
+                            <th>Szczegóły Lotu</th>
+                            <th>Bramka (Gate)</th>
+                            <th>Status i Szybka Zmiana</th>
+                            <th>Akcje</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for lot in loty %}
                         <tr>
-                            <td>{{ lot.numer_lotu }}</td>
-                            <td>{{ lot.kierunek }}</td>
-                            <td>{{ lot.planowo }}</td>
-                            <td>{{ lot.bramka }}</td>
-                            <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
                             <td>
-                                <form action="/pracownik/zmien_status/{{ lot.id_lotu }}" method="POST" style="display:flex; gap:10px;">
-                                    <select name="nowy_status" style="padding: 5px; border-radius: 4px; border: 1px solid #cbd5e0;">
-                                        <option value="O czasie" {% if lot.status == 'O czasie' %}selected{% endif %}>O czasie</option>
-                                        <option value="Opóźniony" {% if lot.status == 'Opóźniony' %}selected{% endif %}>Opóźniony</option>
-                                        <option value="Boarding" {% if lot.status == 'Boarding' %}selected{% endif %}>Boarding</option>
-                                        <option value="Odprawa" {% if lot.status == 'Odprawa' %}selected{% endif %}>Odprawa</option>
-                                        <option value="Odwołany" {% if lot.status == 'Odwołany' %}selected{% endif %}>Odwołany</option>
+                                <div class="flight-info-cell">
+                                    <span style="font-weight: bold; font-size: 1.1em; color: #1a365d;">{{ lot.numer_lotu }}</span>
+                                    <span style="color: #4a5568;">{{ lot.kierunek }}</span>
+                                    <small style="color: #718096; font-style: italic;">📅 {{ lot.planowo }}</small>
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <form action="/admin/zmien_bramke/{{ lot.id }}" method="POST" class="inline-form-group">
+                                    <select name="nowa_bramka" class="inline-select">
+                                        <option value="">Brak</option>
+                                        <optgroup label="Sektor A">
+                                            <option value="A1" {% if lot.bramka == 'A1' %}selected{% endif %}>A1</option>
+                                            <option value="A2" {% if lot.bramka == 'A2' %}selected{% endif %}>A2</option>
+                                        </optgroup>
+                                        <optgroup label="Sektor B">
+                                            <option value="B1" {% if lot.bramka == 'B1' %}selected{% endif %}>B1</option>
+                                        </optgroup>
                                     </select>
-                                    <button type="submit" class="btn-yellow" style="padding: 5px 10px; font-size: 12px;">Zapisz</button>
+                                    <button type="submit" class="btn-ok">OK</button>
                                 </form>
+                            </td>
+
+                            <td>
+                                <div class="gate-status-cell">
+                                    <span class="status {{ lot.status_css }}">{{ lot.status }}</span>
+                                    <form action="/admin/zmien_status/{{ lot.id }}" method="POST" class="inline-form-group">
+                                        <select name="nowy_status" class="inline-select">
+                                            <option value="O czasie" {% if lot.status == 'O czasie' %}selected{% endif %}>O czasie</option>
+                                            <option value="Opóźniony" {% if lot.status == 'Opóźniony' %}selected{% endif %}>Opóźniony</option>
+                                            <option value="Boarding" {% if lot.status == 'Boarding' %}selected{% endif %}>Boarding</option>
+                                        </select>
+                                        <button type="submit" class="btn-ok">Zapisz</button>
+                                    </form>
+                                </div>
+                            </td>
+
+                            <td>
+                                <a href="/admin/edytuj/{{ lot.id }}" class="action-btn edit-btn">Pełna Edycja</a>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
+                {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% for p in page_range %}
+                        <a href="/admin?page={{ p }}" class="page-link {% if p == current_page %}active{% endif %}">{{ p }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </section>
         </main>
     </div>

@@ -21,80 +21,98 @@
         </nav>
         <div class="nav-actions">
             <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
-            <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
+            <a href="/pracownik" class="btn-outline" style="margin-right: 10px;">📋 Widok Pracownika</a>
             <a href="/wyloguj" class="btn-outline">Wyloguj</a>
-            <button class="lang-btn">🌐 PL</button>
         </div>
     </header>
 
     <div class="admin-container">
         <aside class="admin-sidebar">
             <ul class="sidebar-menu">
-                <li class="{% if active_tab == 'dashboard' %}active{% endif %}"><a href="/admin">📊 Pulpit / Loty</a></li>
-                <li class="{% if active_tab == 'uzytkownicy' %}active{% endif %}"><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
-                <li class="{% if active_tab == 'rezerwacje' %}active{% endif %}"><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
+                <li class="active"><a href="/admin">📊 Pulpit / Loty</a></li>
+                <li><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
+                <li><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
             </ul>
         </aside>
 
         <main class="admin-main">
             <div class="admin-header">
-                <h1>Pulpit Zarządzania</h1>
+                <h1>Pulpit Zarządzania Lotami</h1>
                 <a href="/admin/dodaj_lot" class="btn-yellow" style="text-decoration: none;">+ Dodaj Nowy Lot</a>
             </div>
 
             <section class="admin-content-section">
-                <h2>Ostatnie Loty (Zarządzanie)</h2>
+                <h2>Zarządzanie Lotami (Szybka Edycja)</h2>
                 <div class="table-responsive">
                     <table class="admin-table">
                         <thead>
                             <tr>
                                 <th>Nr Lotu</th>
                                 <th>Kierunek</th>
-                                <th>Planowo</th>
-                                <th>Bramka</th>
-                                <th>Status</th>
-                                <th>Akcje</th>
+                                <th>Bramka (Gate)</th>
+                                <th>Status i Akcja</th>
+                                <th>Pełna Edycja</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% if loty %}
                                 {% for lot in loty %}
                                 <tr>
-                                    <td>{{ lot.numer_lotu }}</td>
-                                    <td>{{ lot.kierunek }}</td>
-                                    <td>{{ lot.planowo }}</td>
-                                    <td>{{ lot.bramka }}</td>
-                                    <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
-                                    <td class="action-cell">
-                                        <a href="/admin/edytuj/{{ lot.id }}" class="action-btn edit-btn">Edytuj</a>
-                                        
-                                        <form action="/admin/zmien_status/{{ lot.id }}" method="POST" style="display:flex; gap:5px; align-items:center; margin:0;">
-                                            <select name="nowy_status" style="padding: 5px; border-radius: 4px; border: 1px solid #cbd5e0;">
-                                                <option value="O czasie" {% if lot.status == 'O czasie' %}selected{% endif %}>O czasie</option>
-                                                <option value="Opóźniony" {% if lot.status == 'Opóźniony' %}selected{% endif %}>Opóźniony</option>
-                                                <option value="Boarding" {% if lot.status == 'Boarding' %}selected{% endif %}>Boarding</option>
-                                                <option value="Odprawa" {% if lot.status == 'Odprawa' %}selected{% endif %}>Odprawa</option>
-                                                <option value="Odwołany" {% if lot.status == 'Odwołany' %}selected{% endif %}>Odwołany</option>
+                                    <td style="font-weight: bold;">{{ lot.numer_lotu }}</td>
+                                    <td>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span>{{ lot.kierunek }}</span>
+                                            <small style="color: #718096;">{{ lot.planowo }}</small>
+                                        </div>
+                                    </td>
+                                    
+                                    <td>
+                                        <form action="/admin/zmien_bramke/{{ lot.id }}" method="POST" class="inline-form">
+                                            <select name="nowa_bramka">
+                                                <option value="">Brak</option>
+                                                <optgroup label="Sektor A">
+                                                    <option value="A1" {% if lot.bramka == 'A1' %}selected{% endif %}>A1</option>
+                                                    <option value="A2" {% if lot.bramka == 'A2' %}selected{% endif %}>A2</option>
+                                                    <option value="A3" {% if lot.bramka == 'A3' %}selected{% endif %}>A3</option>
+                                                </optgroup>
+                                                <optgroup label="Sektor B">
+                                                    <option value="B1" {% if lot.bramka == 'B1' %}selected{% endif %}>B1</option>
+                                                    <option value="B2" {% if lot.bramka == 'B2' %}selected{% endif %}>B2</option>
+                                                </optgroup>
                                             </select>
-                                            <button type="submit" class="action-btn status-btn">Zapisz</button>
+                                            <button type="submit" class="btn-save-tiny">OK</button>
                                         </form>
+                                    </td>
+
+                                    <td>
+                                        <div class="status-cell-wrapper">
+                                            <span class="status {{ lot.status_css }}">{{ lot.status }}</span>
+                                            <form action="/admin/zmien_status/{{ lot.id }}" method="POST" class="inline-form">
+                                                <select name="nowy_status">
+                                                    <option value="O czasie" {% if lot.status == 'O czasie' %}selected{% endif %}>O czasie</option>
+                                                    <option value="Opóźniony" {% if lot.status == 'Opóźniony' %}selected{% endif %}>Opóźniony</option>
+                                                    <option value="Boarding" {% if lot.status == 'Boarding' %}selected{% endif %}>Boarding</option>
+                                                    <option value="Odwołany" {% if lot.status == 'Odwołany' %}selected{% endif %}>Odwołany</option>
+                                                </select>
+                                                <button type="submit" class="btn-save-tiny">Zapisz</button>
+                                            </form>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <a href="/admin/edytuj/{{ lot.id }}" class="action-btn edit-btn">Otwórz edytor</a>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
-                                <tr>
-                                    <td colspan="6" style="text-align: center; padding: 20px;">Brak lotów w bazie danych.</td>
-                                </tr>
+                                <tr><td colspan="5" style="text-align: center; padding: 20px;">Brak lotów w systemie.</td></tr>
                             {% endif %}
                         </tbody>
                     </table>
 
                     {% if total_pages > 1 %}
                     <div class="pagination">
-                        {% if current_page > 1 %}
-                            <a href="/admin?page={{ current_page - 1 }}" class="page-link">&laquo;</a>
-                        {% endif %}
-
+                        {% if current_page > 1 %}<a href="/admin?page={{ current_page - 1 }}" class="page-link">&laquo;</a>{% endif %}
                         {% for p in page_range %}
                             {% if p == current_page %}
                                 <span class="page-link active">{{ p }}</span>
@@ -102,13 +120,9 @@
                                 <a href="/admin?page={{ p }}" class="page-link">{{ p }}</a>
                             {% endif %}
                         {% endfor %}
-
-                        {% if current_page < total_pages %}
-                            <a href="/admin?page={{ current_page + 1 }}" class="page-link">&raquo;</a>
-                        {% endif %}
+                        {% if current_page < total_pages %}<a href="/admin?page={{ current_page + 1 }}" class="page-link">&raquo;</a>{% endif %}
                     </div>
                     {% endif %}
-
                 </div>
             </section>
         </main>
