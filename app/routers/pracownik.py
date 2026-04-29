@@ -78,6 +78,7 @@ async def pracownik_zmien_status(id_lotu: int, nowy_status: str = Form(...)):
     cur.close()
     conn.close()
     return RedirectResponse(url="/pracownik", status_code=status.HTTP_302_FOUND)
+    
 @router.post("/zmien_bramke/{id_lotu}")
 async def pracownik_zmien_bramke(id_lotu: int, nowa_bramka: str = Form(...)):
     conn = get_db_connection()

@@ -43,7 +43,7 @@ async def rejestracja_post(imie: str = Form(...), nazwisko: str = Form(...), ema
     finally:
         cur.close()
         conn.close()
-
+        
 @router.post("/auth/login")
 async def logowanie_post(email: str = Form(...), haslo: str = Form(...)):
     conn = get_db_connection()
@@ -76,7 +76,7 @@ async def logowanie_post(email: str = Form(...), haslo: str = Form(...)):
         response = RedirectResponse(url=cel, status_code=status.HTTP_302_FOUND)
         response.set_cookie(key="session_token", value=token, httponly=True)
         return response
-    
+
     cur.close()
     conn.close()
     return RedirectResponse(url="/logowanie?error=invalid", status_code=status.HTTP_302_FOUND)
