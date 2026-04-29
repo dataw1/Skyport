@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2.extras import RealDictCursor
 from typing import Optional
 import math
 
-from app.database import get_db_connection
+from app.database import get_db_connection, sprawdz_dostepnosc_miejsc
 from app.security import get_current_user
 
 router = APIRouter(tags=["Widoki Publiczne"])
@@ -20,7 +21,14 @@ async def strona_glowna(request: Request, kierunek: Optional[str] = None, data: 
     if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
-            query = "SELECT * FROM Loty WHERE planowo >= NOW() - INTERVAL '2 hours'"
+
+            # albo wywietla tylko te co maja planowo odlot w ciagu 2h, albo wszystkie z opcja filtrowania
+
+            # query = "SELECT * FROM Loty WHERE planowo >= NOW() - INTERVAL '2 hours'"
+            query = "SELECT * FROM Loty WHERE 1=1"
+
+
+
             params = []
             if kierunek:
                 query += " AND kierunek ILIKE %s"
@@ -120,9 +128,59 @@ async def strona_loty(request: Request, page: int = 1, kierunek: Optional[str] =
 
     return templates.TemplateResponse(request=request, name="loty.html", context={"request": request, "user": user, "loty": loty_do_wyswietlenia, "current_page": page, "total_pages": total_pages, "page_range": page_range, "search_query": search_query})
 
-@router.get("/parking", response_class=HTMLResponse)
-async def strona_parking(request: Request): return templates.TemplateResponse(request=request, name="parking.html", context={"request": request, "user": get_current_user(request)})
 
+@router.get("/parking", response_class=HTMLResponse)
+async def strona_parking(request: Request): 
+    return templates.TemplateResponse(request=request, name="parking.html", context={"request": request, "user": get_current_user(request)})
+
+
+@router.post("/sprawdz-parking", response_class=HTMLResponse)
+async def sprawdz_parking_endpoint(
+    request: Request,
+    data_przyjazdu: str = Form(...),
+    data_wyjazdu: str = Form(...),
+    rodzaj_parkingu: str = Form(...)
+):
+    user = get_current_user(request)
+    wynik = sprawdz_dostepnosc_miejsc(rodzaj_parkingu, data_przyjazdu, data_wyjazdu)
+    
+    if "error" in wynik:
+        wiadomosc = wynik["error"]
+        czy_sukces = False
+    elif wynik["dostepny"]:
+        wiadomosc = f"Świetnie! Mamy wolne miejsca ({wynik['wolne_miejsca']} z {wynik['pojemnosc_calkowita']}). Możesz przejść do rezerwacji!"
+        czy_sukces = True
+    else:
+        wiadomosc = "Przepraszamy, ten parking jest w pełni zarezerwowany w tym terminie."
+        czy_sukces = False
+
+    return templates.TemplateResponse(
+        request=request, 
+        name="parking.html", 
+        context={
+            "request": request, 
+            "user": user, 
+            "wiadomosc": wiadomosc,
+            "czy_sukces": czy_sukces
+        }
+    )
+@router.get("/rezerwacja-parkingu", response_class=HTMLResponse)
+async def strona_rezerwacji_parkingu(request: Request, rodzaj: Optional[str] = None):
+    user = get_current_user(request)
+    
+    
+    if not user:
+        return RedirectResponse(url="/logowanie", status_code=303)
+    
+    return templates.TemplateResponse(
+        request=request, 
+        name="rezerwacja_parkingu.html", 
+        context={
+            "request": request, 
+            "user": user, 
+            "wybrany_rodzaj": rodzaj
+        }
+    )
 @router.get("/mapy", response_class=HTMLResponse)
 async def strona_mapy(request: Request): return templates.TemplateResponse(request=request, name="mapy.html", context={"request": request, "user": get_current_user(request)})
 
@@ -134,3 +192,63 @@ async def strona_pomoc(request: Request): return templates.TemplateResponse(requ
 
 @router.get("/logowanie", response_class=HTMLResponse)
 async def strona_logowania(request: Request): return templates.TemplateResponse(request=request, name="logowanie.html", context={"request": request, "user": get_current_user(request)})
+
+@router.post("/potwierdz-rezerwacje")
+async def potwierdz_rezerwacje_endpoint(
+    request: Request,
+    data_przyjazdu: str = Form(...),
+    data_wyjazdu: str = Form(...),
+    rodzaj_parkingu: str = Form(...),
+    nr_rejestracyjny: str = Form(...),
+    rodzaj_pojazdu: str = Form(...)
+):
+
+    user = get_current_user(request)
+    
+    if not user:
+        return RedirectResponse(url="/logowanie", status_code=303)
+        
+    id_konta_klienta = user.get('id') 
+
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO rezerwacje_parkingu 
+                (id_konta, rodzaj_parkingu, rodzaj_pojazdu, data_przyjazdu, data_wyjazdu, nr_rejestracyjny, status) 
+                VALUES (%s, %s, %s, %s, %s, %s, 'oczekujaca')
+            """, (
+                id_konta_klienta, 
+                rodzaj_parkingu, 
+                rodzaj_pojazdu, 
+                data_przyjazdu, 
+                data_wyjazdu, 
+                nr_rejestracyjny
+            ))
+            
+            conn.commit() 
+            cur.close()
+        except Exception as e:
+            print(f"Błąd podczas zapisu rezerwacji: {e}")
+            if conn:
+                conn.rollback()
+            return HTMLResponse("<h1>Wystąpił błąd podczas zapisu do bazy danych. Spróbuj ponownie.</h1>")
+        finally:
+            if conn:
+                conn.close()
+
+    return HTMLResponse(f"""
+        <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+            <h1 style="color: #28a745;">Sukces! Rezerwacja została potwierdzona.</h1>
+            <p>Dziękujemy, {user.get('imie')}! Miejsce zostało zarezerwowane i zapisane w systemie.</p>
+            <div style="background-color: #f8f9fa; display: inline-block; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: left;">
+                <p><strong>Parking:</strong> {rodzaj_parkingu}</p>
+                <p><strong>Pojazd:</strong> {rodzaj_pojazdu} (Nr: {nr_rejestracyjny})</p>
+                <p><strong>Przyjazd:</strong> {data_przyjazdu.replace('T', ' ')}</p>
+                <p><strong>Wyjazd:</strong> {data_wyjazdu.replace('T', ' ')}</p>
+            </div>
+            <br><br>
+            <a href='/parking' style="padding: 10px 20px; background-color: #f1c40f; color: black; text-decoration: none; border-radius: 5px; font-weight: bold;">Wróć do strony głównej</a>
+        </div>
+    """)

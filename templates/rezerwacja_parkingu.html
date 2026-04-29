@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potwierdzenie Rezerwacji - SkyPort</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/parking.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <span class="icon">✈️</span> <a href="/">SkyPort</a>
+        </div>
+        <nav class="nav-links">
+            <a href="/loty">Loty</a>
+            <a href="/parking">Parking</a>
+            <a href="/mapy">Mapy Terminali</a>
+            <a href="/bezpieczenstwo">Informacje o Bezpieczeństwie</a>
+        </nav>
+        <div class="nav-actions">
+            {% if user %}
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+
+            {% if user.rola == 'admin' %}
+            <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
+            {% endif %}
+
+            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+            {% else %}
+            <a href="/logowanie" class="btn-outline">Logowanie</a>
+            {% endif %}
+
+            <button class="lang-btn">🌐 PL</button>
+            <a href="/pomoc" class="help-link">❓ Centrum Pomocy</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="booking-section" style="margin-top: 50px;">
+            <h2>Dokończ Rezerwację Parkingu</h2>
+            <p style="text-align: center; margin-bottom: 20px;">Wypełnij szczegóły, aby zarezerwować miejsce.</p>
+            
+            <form id="finalBookingForm" class="booking-form" action="/potwierdz-rezerwacje" method="POST">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Data i Czas Przyjazdu</label>
+                        <input type="datetime-local" name="data_przyjazdu" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Data i Czas Wyjazdu</label>
+                        <input type="datetime-local" name="data_wyjazdu" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Rodzaj Parkingu</label>
+                        <select name="rodzaj_parkingu" required>
+                            <option value="Krótkoterminowy" {% if wybrany_rodzaj == 'Krótkoterminowy' %}selected{% endif %}>Krótkoterminowy</option>
+                            <option value="Długoterminowy" {% if wybrany_rodzaj == 'Długoterminowy' %}selected{% endif %}>Długoterminowy</option>
+                            <option value="Premium" {% if wybrany_rodzaj == 'Premium' %}selected{% endif %}>Premium</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Numer Rejestracyjny</label>
+                        <input type="text" name="nr_rejestracyjny" placeholder="np. WA 12345" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Rodzaj Pojazdu</label>
+                        <select name="rodzaj_pojazdu">
+                            <option value="Standardowy Samochód Osobowy">Standardowy Samochód Osobowy</option>
+                            <option value="SUV / Van">SUV / Van</option>
+                            <option value="Motocykl">Motocykl</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-yellow full-width">Potwierdzam Rezerwację</button>
+            </form>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-bottom">
+            <p>&copy; 2026 SkyPort. Wszelkie prawa zastrzeżone.</p>
+        </div>
+    </footer>
+</body>
+</html>
