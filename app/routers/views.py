@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Request, Form, status
-from fastapi.responses import HTMLResponse
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2.extras import RealDictCursor
@@ -7,6 +6,7 @@ from typing import Optional
 import math
 import string
 import random
+from datetime import datetime
 
 from app.database import get_db_connection, sprawdz_dostepnosc_miejsc
 from app.security import get_current_user
@@ -23,14 +23,7 @@ async def strona_glowna(request: Request, kierunek: Optional[str] = None, data: 
     if conn:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
-
-            # albo wywietla tylko te co maja planowo odlot w ciagu 2h, albo wszystkie z opcja filtrowania
-
-            # query = "SELECT * FROM Loty WHERE planowo >= NOW() - INTERVAL '2 hours'"
             query = "SELECT * FROM Loty WHERE 1=1"
-
-
-
             params = []
             if kierunek:
                 query += " AND kierunek ILIKE %s"
@@ -53,10 +46,25 @@ async def strona_glowna(request: Request, kierunek: Optional[str] = None, data: 
                 elif obecny_status.lower() == 'boarding': status_css = "boarding"
                 elif obecny_status.lower() == 'odwołany': status_css = "delayed"
                 
-                planowo_str = lot['planowo'].strftime('%H:%M') if lot.get('planowo') else '00:00'
+                obecny_czas = datetime.now()
+                planowo_data = lot.get('planowo')
+                
+                if planowo_data:
+                    planowo_str = planowo_data.strftime('%d.%m.%Y %H:%M')
+                    czy_przyszly = planowo_data > obecny_czas
+                else:
+                    planowo_str = 'Brak danych'
+                    czy_przyszly = False
+                
                 loty_do_wyswietlenia.append({
-                    "numer_lotu": lot.get('numer_lotu', 'Brak'), "kierunek": lot.get('kierunek', 'Brak'),
-                    "planowo": planowo_str, "bramka": lot.get('bramka', '-'), "status": obecny_status, "status_css": status_css
+                    "id_lotu": lot['id_lotu'],
+                    "numer_lotu": lot.get('numer_lotu', 'Brak'), 
+                    "kierunek": lot.get('kierunek', 'Brak'),
+                    "planowo": planowo_str, 
+                    "bramka": lot.get('bramka', '-'), 
+                    "status": obecny_status, 
+                    "status_css": status_css,
+                    "czy_przyszly": czy_przyszly
                 })
         except Exception as e:
             print(f"Błąd: {e}")
@@ -113,11 +121,25 @@ async def strona_loty(request: Request, page: int = 1, kierunek: Optional[str] =
                 elif obecny_status.lower() == 'boarding': status_css = "boarding"
                 elif obecny_status.lower() == 'odwołany': status_css = "delayed"
                 
-                planowo_str = lot['planowo'].strftime('%H:%M') if lot.get('planowo') else '00:00'
+                obecny_czas = datetime.now()
+                planowo_data = lot.get('planowo')
+                
+                if planowo_data:
+                    planowo_str = planowo_data.strftime('%d.%m.%Y %H:%M')
+                    czy_przyszly = planowo_data > obecny_czas
+                else:
+                    planowo_str = 'Brak danych'
+                    czy_przyszly = False
+                
                 loty_do_wyswietlenia.append({
-                    "numer_lotu": lot.get('numer_lotu', 'Brak'), "kierunek": lot.get('kierunek', 'Brak'),
-                    "planowo": planowo_str, "bramka": lot.get('bramka', '-'), "status": obecny_status, "status_css": status_css,
-                    "id_lotu": lot['id_lotu'],  
+                    "id_lotu": lot['id_lotu'],
+                    "numer_lotu": lot.get('numer_lotu', 'Brak'), 
+                    "kierunek": lot.get('kierunek', 'Brak'),
+                    "planowo": planowo_str, 
+                    "bramka": lot.get('bramka', '-'), 
+                    "status": obecny_status, 
+                    "status_css": status_css,
+                    "czy_przyszly": czy_przyszly
                 })
         finally:
             cur.close()
@@ -167,13 +189,13 @@ async def sprawdz_parking_endpoint(
             "czy_sukces": czy_sukces
         }
     )
+
 @router.get("/rezerwacja-parkingu", response_class=HTMLResponse)
 async def strona_rezerwacji_parkingu(request: Request, rodzaj: Optional[str] = None):
     user = get_current_user(request)
     
-    
     if not user:
-        return RedirectResponse(url="/logowanie", status_code=303)
+        return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
     
     return templates.TemplateResponse(
         request=request, 
@@ -184,6 +206,7 @@ async def strona_rezerwacji_parkingu(request: Request, rodzaj: Optional[str] = N
             "wybrany_rodzaj": rodzaj
         }
     )
+
 @router.get("/mapy", response_class=HTMLResponse)
 async def strona_mapy(request: Request): return templates.TemplateResponse(request=request, name="mapy.html", context={"request": request, "user": get_current_user(request)})
 
@@ -205,11 +228,10 @@ async def potwierdz_rezerwacje_endpoint(
     nr_rejestracyjny: str = Form(...),
     rodzaj_pojazdu: str = Form(...)
 ):
-
     user = get_current_user(request)
     
     if not user:
-        return RedirectResponse(url="/logowanie", status_code=303)
+        return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
         
     id_konta_klienta = user.get('id') 
 
@@ -255,6 +277,7 @@ async def potwierdz_rezerwacje_endpoint(
             <a href='/parking' style="padding: 10px 20px; background-color: #f1c40f; color: black; text-decoration: none; border-radius: 5px; font-weight: bold;">Wróć do strony głównej</a>
         </div>
     """)
+
 @router.post("/rezerwuj-lot/{id_lotu}", response_class=HTMLResponse)
 async def rezerwuj_lot_endpoint(request: Request, id_lotu: int):
     user = get_current_user(request)
@@ -271,8 +294,20 @@ async def rezerwuj_lot_endpoint(request: Request, id_lotu: int):
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        cur.execute("SELECT numer_lotu, kierunek FROM Loty WHERE id_lotu = %s", (id_lotu,))
+        cur.execute("SELECT numer_lotu, kierunek, planowo FROM Loty WHERE id_lotu = %s", (id_lotu,))
         lot = cur.fetchone()
+
+        if not lot:
+            return HTMLResponse("<h1>Błąd: Taki lot nie istnieje.</h1>")
+
+        if lot['planowo'] < datetime.now():
+            return HTMLResponse('''
+                <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+                    <h1 style="color: #e53e3e;">Rezerwacja niemożliwa</h1>
+                    <p>Ten lot już się odbył. Zarezerwuj bilet na przyszły termin.</p>
+                    <a href="/loty" style="padding: 10px 20px; background-color: #f1c40f; color: black; text-decoration: none; border-radius: 5px; font-weight: bold;">Wróć do listy lotów</a>
+                </div>
+            ''')
 
         cur.execute("""
             INSERT INTO rezerwacje_lotow (id_konta, id_lotu, pnr, status) 
@@ -284,7 +319,7 @@ async def rezerwuj_lot_endpoint(request: Request, id_lotu: int):
             <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
                 <h1 style="color: #28a745;">Sukces! Zarezerwowano bilet lotniczy.</h1>
                 <p>Twój unikalny kod rezerwacji (PNR) to: <strong>{pnr}</strong></p>
-                <div style="background-color: #f8f9fa; display: inline-block; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <div style="background-color: #f8f9fa; display: inline-block; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: left;">
                     <p><strong>Lot:</strong> {lot['numer_lotu']}</p>
                     <p><strong>Kierunek:</strong> {lot['kierunek']}</p>
                     <p><strong>Pasażer:</strong> {user.get('imie')}</p>
@@ -296,7 +331,7 @@ async def rezerwuj_lot_endpoint(request: Request, id_lotu: int):
     except Exception as e:
         conn.rollback()
         print(f"Błąd rezerwacji lotu: {e}")
-        return HTMLResponse("<h1>Wystąpił błąd. Możliwe, że ten lot nie istnieje. Spróbuj ponownie.</h1>")
+        return HTMLResponse("<h1>Wystąpił błąd. Spróbuj ponownie.</h1>")
     finally:
         cur.close()
         conn.close()
