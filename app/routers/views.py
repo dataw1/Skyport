@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2.extras import RealDictCursor
 from typing import Optional
 import math
 
-from app.database import get_db_connection
+from app.database import get_db_connection, sprawdz_dostepnosc_miejsc
 from app.security import get_current_user
 
 router = APIRouter(tags=["Widoki Publiczne"])
@@ -120,8 +120,43 @@ async def strona_loty(request: Request, page: int = 1, kierunek: Optional[str] =
 
     return templates.TemplateResponse(request=request, name="loty.html", context={"request": request, "user": user, "loty": loty_do_wyswietlenia, "current_page": page, "total_pages": total_pages, "page_range": page_range, "search_query": search_query})
 
+
 @router.get("/parking", response_class=HTMLResponse)
-async def strona_parking(request: Request): return templates.TemplateResponse(request=request, name="parking.html", context={"request": request, "user": get_current_user(request)})
+async def strona_parking(request: Request): 
+    return templates.TemplateResponse(request=request, name="parking.html", context={"request": request, "user": get_current_user(request)})
+
+
+@router.post("/sprawdz-parking", response_class=HTMLResponse)
+async def sprawdz_parking_endpoint(
+    request: Request,
+    data_przyjazdu: str = Form(...),
+    data_wyjazdu: str = Form(...),
+    rodzaj_parkingu: str = Form(...)
+):
+    user = get_current_user(request)
+    wynik = sprawdz_dostepnosc_miejsc(rodzaj_parkingu, data_przyjazdu, data_wyjazdu)
+    
+    if "error" in wynik:
+        wiadomosc = wynik["error"]
+        czy_sukces = False
+    elif wynik["dostepny"]:
+        wiadomosc = f"Świetnie! Mamy wolne miejsca ({wynik['wolne_miejsca']} z {wynik['pojemnosc_calkowita']}). Możesz przejść do rezerwacji!"
+        czy_sukces = True
+    else:
+        wiadomosc = "Przepraszamy, ten parking jest w pełni zarezerwowany w tym terminie."
+        czy_sukces = False
+
+    return templates.TemplateResponse(
+        request=request, 
+        name="parking.html", 
+        context={
+            "request": request, 
+            "user": user, 
+            "wiadomosc": wiadomosc,
+            "czy_sukces": czy_sukces
+        }
+    )
+
 
 @router.get("/mapy", response_class=HTMLResponse)
 async def strona_mapy(request: Request): return templates.TemplateResponse(request=request, name="mapy.html", context={"request": request, "user": get_current_user(request)})

@@ -89,33 +89,46 @@
         </section>
 
         <section class="booking-section">
-            <h2>Zarezerwuj Miejsce</h2>
-            <form id="parkingForm" class="booking-form">
+            <h2>Sprawdź Dostępność Miejsc </h2>
+            
+        {% if wiadomosc %}
+            {% if czy_sukces %}
+                <div style="padding: 15px; margin-bottom: 20px; border-radius: 5px; text-align: center; font-weight: bold; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+                    {{ wiadomosc }}
+                </div>
+            {% else %}
+                <div style="padding: 15px; margin-bottom: 20px; border-radius: 5px; text-align: center; font-weight: bold; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+                    {{ wiadomosc }}
+                </div>
+            {% endif %}
+        {% endif %}
+
+            <form id="parkingForm" class="booking-form" action="/sprawdz-parking" method="POST">
                 <div class="form-row">
                     <div class="input-group">
                         <label>Data i Czas Przyjazdu</label>
-                        <input type="datetime-local" required>
+                        <input type="datetime-local" name="data_przyjazdu" required>
                     </div>
                     <div class="input-group">
                         <label>Data i Czas Wyjazdu</label>
-                        <input type="datetime-local" required>
+                        <input type="datetime-local" name="data_wyjazdu" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="input-group">
                         <label>Rodzaj Parkingu</label>
-                        <select>
-                            <option>Krótkoterminowy</option>
-                            <option>Długoterminowy</option>
-                            <option>Premium</option>
+                        <select name="rodzaj_parkingu">
+                            <option value="Krótkoterminowy">Krótkoterminowy</option>
+                            <option value="Długoterminowy">Długoterminowy</option>
+                            <option value="Premium">Premium</option>
                         </select>
                     </div>
                     <div class="input-group">
                         <label>Rodzaj Pojazdu</label>
-                        <select>
-                            <option>Standardowy Samochód Osobowy</option>
-                            <option>SUV / Van</option>
-                            <option>Motocykl</option>
+                        <select name="rodzaj_pojazdu">
+                            <option value="Standardowy Samochód Osobowy">Standardowy Samochód Osobowy</option>
+                            <option value="SUV / Van">SUV / Van</option>
+                            <option value="Motocykl">Motocykl</option>
                         </select>
                     </div>
                 </div>

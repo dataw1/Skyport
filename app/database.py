@@ -55,3 +55,46 @@ def utworz_admina_przy_starcie():
     
     cur.close()
     conn.close()
+
+def sprawdz_dostepnosc_miejsc(rodzaj_parkingu: str, data_przyjazdu: str, data_wyjazdu: str):
+    conn = get_db_connection()
+    if not conn:
+        return {"error": "Błąd połączenia z bazą danych."}
+
+    try:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT pojemnosc_total FROM parkingi WHERE nazwa = %s;", (rodzaj_parkingu,))
+        parking = cursor.fetchone()
+        
+        if not parking:
+            return {"error": "Nie znaleziono takiego parkingu w bazie (upewnij się, że wykonałeś skrypt SQL)."}
+        
+        pojemnosc_total = parking[0]
+
+        query = """
+            SELECT COUNT(*) FROM rezerwacje_parkingu 
+            WHERE rodzaj_parkingu = %s 
+            AND status != 'anulowana'
+            AND data_przyjazdu < %s 
+            AND data_wyjazdu > %s;
+        """
+        cursor.execute(query, (rodzaj_parkingu, data_wyjazdu, data_przyjazdu))
+        zajete_miejsca = cursor.fetchone()[0]
+
+        wolne_miejsca = pojemnosc_total - zajete_miejsca
+
+        return {
+            "dostepny": wolne_miejsca > 0,
+            "wolne_miejsca": wolne_miejsca,
+            "zajete": zajete_miejsca,
+            "pojemnosc_calkowita": pojemnosc_total
+        }
+
+    except Exception as e:
+        print(f"Błąd podczas sprawdzania dostępności: {e}")
+        return {"error": "Wystąpił błąd serwera podczas odpytywania bazy danych."}
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
