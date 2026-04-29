@@ -7,6 +7,7 @@ import math
 import string
 import random
 from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.database import get_db_connection, sprawdz_dostepnosc_miejsc
 from app.security import get_current_user
@@ -35,7 +36,7 @@ async def strona_glowna(request: Request, kierunek: Optional[str] = None, data: 
                 query += " AND numer_lotu ILIKE %s"
                 params.append(f"%{numer_lotu}%")
                 
-            query += " ORDER BY planowo ASC LIMIT 10"
+            query += " ORDER BY CASE WHEN planowo >= NOW() THEN 0 ELSE 1 END, planowo ASC LIMIT 10"
             cur.execute(query, tuple(params))
             loty_db = cur.fetchall()
             
@@ -108,7 +109,7 @@ async def strona_loty(request: Request, page: int = 1, kierunek: Optional[str] =
             if page > total_pages and total_pages > 0: page = total_pages
             
             offset = (page - 1) * items_per_page
-            data_query = f"SELECT * FROM Loty {query_conditions} ORDER BY planowo ASC LIMIT %s OFFSET %s"
+            data_query = f"SELECT * FROM Loty {query_conditions} ORDER BY CASE WHEN planowo >= NOW() THEN 0 ELSE 1 END, planowo ASC LIMIT %s OFFSET %s"
             
             final_params = tuple(params) + (items_per_page, offset)
             cur.execute(data_query, final_params)
@@ -335,3 +336,60 @@ async def rezerwuj_lot_endpoint(request: Request, id_lotu: int):
     finally:
         cur.close()
         conn.close()
+@router.get("/przyloty", response_class=HTMLResponse)
+async def strona_przyloty(request: Request, kierunek: Optional[str] = None, data: Optional[str] = None, numer_lotu: Optional[str] = None):
+    user = get_current_user(request)
+    
+    miasta = [
+        "Londyn (LHR)", "Paryż (CDG)", "Frankfurt (FRA)", "Amsterdam (AMS)", 
+        "Rzym (FCO)", "Madryt (MAD)", "Berlin (BER)", "Wiedeń (VIE)", 
+        "Praga (PRG)", "Nowy Jork (JFK)", "Dubaj (DXB)", "Monachium (MUC)",
+        "Tokio (HND)", "Stambuł (IST)", "Oslo (OSL)", "Ateny (ATH)"
+    ]
+    linie = ["LO", "LH", "AF", "BA", "KL", "FR", "W6", "EK"]
+    
+    obecny_czas = datetime.now()
+    random.seed(obecny_czas.strftime("%Y-%m-%d-%H"))
+    
+    przyloty = []
+    for _ in range(8):
+        linia = random.choice(linie)
+        numer = f"{linia}{random.randint(100, 999)}"
+        miasto = random.choice(miasta)
+        
+        przesuniecie_minuty = random.randint(-120, 240)
+        czas_przylotu = obecny_czas + timedelta(minutes=przesuniecie_minuty)
+        
+        if czas_przylotu < obecny_czas:
+            status = "Wylądował"
+            status_css = "on-time"
+        elif (czas_przylotu - obecny_czas).total_seconds() < 1800:
+            status = "Podchodzi do lądowania"
+            status_css = "boarding"
+        else:
+            status = random.choices(["Oczekiwany", "Opóźniony"], weights=[85, 15])[0]
+            status_css = "delayed" if status == "Opóźniony" else "on-time"
+            
+        przyloty.append({
+            "numer_lotu": numer,
+            "skad": miasto,
+            "planowo": czas_przylotu.strftime('%d.%m.%Y %H:%M'),
+            "czas_surowy": czas_przylotu,
+            "bramka": f"T{random.randint(1,3)}",
+            "status": status,
+            "status_css": status_css
+        })
+        
+    random.seed()
+    
+    if kierunek:
+        przyloty = [p for p in przyloty if kierunek.lower() in p['skad'].lower()]
+    if numer_lotu:
+        przyloty = [p for p in przyloty if numer_lotu.lower() in p['numer_lotu'].lower()]
+    if data:
+        przyloty = [p for p in przyloty if p['czas_surowy'].strftime('%Y-%m-%d') == data]
+
+    przyloty.sort(key=lambda x: x["czas_surowy"])
+    
+    return templates.TemplateResponse(request=request, name="przyloty.html", context={"request": request, "user": user, "loty": przyloty})
+

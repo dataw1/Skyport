@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyPort - Tablica Odlotów</title>
+    <title>SkyPort - Tablica Przylotów</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -36,11 +36,9 @@
     </header>
 
     <main class="flights-container">
-        <h1 style="text-align: center; margin-top: 30px;">Wyszukaj i Zarezerwuj Lot</h1>
-        
+        <h1 style="text-align: center; margin-top: 40px; color: #1a365d;">Dzisiejsze Przyloty</h1>
         <div class="search-widget" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; max-width: 1000px; margin: 30px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
     
-    <!-- Zakładki: Odloty / Przyloty -->
     <div class="search-tabs" style="display: flex; gap: 20px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; padding-bottom: 10px;">
         <a href="/loty" style="text-decoration: none; font-weight: bold; font-size: 16px; padding-bottom: 12px; margin-bottom: -11px; {% if 'przyloty' not in request.url.path %}color: #1a365d; border-bottom: 3px solid #1a365d;{% else %}color: #718096;{% endif %}">
             🛫 Odloty
@@ -50,7 +48,6 @@
         </a>
     </div>
 
-    <!-- Formularz Wyszukiwania -->
     <form action="{% if 'przyloty' in request.url.path %}/przyloty{% else %}/loty{% endif %}" method="GET" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
         
         <div style="flex: 1; min-width: 200px;">
@@ -81,74 +78,33 @@
         {% endif %}
     </form>
 </div>
+        <p style="text-align: center; color: #718096; margin-bottom: 30px;">Aktualne informacje o przylatujących samolotach do lotniska SkyPort.</p>
 
         <div class="table-responsive" style="max-width: 1000px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <table class="flights-table" style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead style="background-color: #f8f9fa;">
                     <tr>
                         <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Nr Lotu</th>
-                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Kierunek</th>
-                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Godzina Odjazdu</th>
-                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Bramka</th>
+                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Przylot z (Miasto)</th>
+                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Godzina</th>
+                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Terminal</th>
                         <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Status</th>
-                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Rezerwacja</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if loty %}
-                        {% for lot in loty %}
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 15px; font-weight: bold; color: #2d3748;">{{ lot.numer_lotu }}</td>
-                            <td style="padding: 15px;">{{ lot.kierunek }}</td>
-                            <td style="padding: 15px;">{{ lot.planowo }}</td>
-                            <td style="padding: 15px; font-weight: bold;">{{ lot.bramka }}</td>
-                            <td style="padding: 15px;">
-                                <span class="status {{ lot.status_css }}">{{ lot.status }}</span>
-                            </td>
-                            <td style="padding: 15px;">
-                                {% if lot.czy_przyszly %}
-                                    {% if user %}
-                                        <form action="/rezerwuj-lot/{{ lot.id_lotu }}" method="POST" style="margin: 0;">
-                                            <button type="submit" class="btn-yellow" style="padding: 6px 12px; font-size: 13px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background-color: #ecc94b; transition: 0.2s;">
-                                                Zarezerwuj
-                                            </button>
-                                        </form>
-                                    {% else %}
-                                        <a href="/logowanie" class="btn-outline" style="padding: 6px 12px; font-size: 13px; text-decoration: none; border-radius: 4px;">
-                                            Zaloguj się
-                                        </a>
-                                    {% endif %}
-                                {% else %}
-                                    <span style="color: #718096; font-size: 12px; font-weight: bold; background: #edf2f7; padding: 6px 12px; border-radius: 4px;">
-                                        Lot zakończony
-                                    </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="6" style="padding: 30px; text-align: center; color: #718096;">Brak lotów spełniających kryteria.</td>
-                        </tr>
-                    {% endif %}
+                    {% for lot in loty %}
+                    <tr style="border-bottom: 1px solid #e2e8f0; {% if lot.status == 'Wylądował' %}background-color: #f7fafc; opacity: 0.8;{% endif %}">
+                        <td style="padding: 15px; font-weight: bold; color: #2d3748;">{{ lot.numer_lotu }}</td>
+                        <td style="padding: 15px; font-weight: 500;">{{ lot.skad }}</td>
+                        <td style="padding: 15px;">{{ lot.planowo }}</td>
+                        <td style="padding: 15px; font-weight: bold;">{{ lot.bramka }}</td>
+                        <td style="padding: 15px;">
+                            <span class="status {{ lot.status_css }}">{{ lot.status }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
-
-            {% if total_pages > 1 %}
-            <div class="pagination" style="display: flex; justify-content: center; gap: 5px; padding: 20px;">
-                {% if current_page > 1 %}
-                    <a href="/loty?page={{ current_page - 1 }}{{ search_query }}" style="padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; text-decoration: none; color: #2d3748;">&laquo;</a>
-                {% endif %}
-                
-                {% for p in page_range %}
-                    <a href="/loty?page={{ p }}{{ search_query }}" style="padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; text-decoration: none; color: {% if p == current_page %}white{% else %}#2d3748{% endif %}; background-color: {% if p == current_page %}#2b6cb0{% else %}white{% endif %};">{{ p }}</a>
-                {% endfor %}
-                
-                {% if current_page < total_pages %}
-                    <a href="/loty?page={{ current_page + 1 }}{{ search_query }}" style="padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 4px; text-decoration: none; color: #2d3748;">&raquo;</a>
-                {% endif %}
-            </div>
-            {% endif %}
         </div>
     </main>
 </body>
