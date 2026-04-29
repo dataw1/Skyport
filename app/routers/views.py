@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, status
 from fastapi.responses import HTMLResponse
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2.extras import RealDictCursor
 from typing import Optional
 import math
+import string
+import random
 
 from app.database import get_db_connection, sprawdz_dostepnosc_miejsc
 from app.security import get_current_user
@@ -114,7 +116,8 @@ async def strona_loty(request: Request, page: int = 1, kierunek: Optional[str] =
                 planowo_str = lot['planowo'].strftime('%H:%M') if lot.get('planowo') else '00:00'
                 loty_do_wyswietlenia.append({
                     "numer_lotu": lot.get('numer_lotu', 'Brak'), "kierunek": lot.get('kierunek', 'Brak'),
-                    "planowo": planowo_str, "bramka": lot.get('bramka', '-'), "status": obecny_status, "status_css": status_css
+                    "planowo": planowo_str, "bramka": lot.get('bramka', '-'), "status": obecny_status, "status_css": status_css,
+                    "id_lotu": lot['id_lotu'],  
                 })
         finally:
             cur.close()
@@ -252,3 +255,48 @@ async def potwierdz_rezerwacje_endpoint(
             <a href='/parking' style="padding: 10px 20px; background-color: #f1c40f; color: black; text-decoration: none; border-radius: 5px; font-weight: bold;">Wróć do strony głównej</a>
         </div>
     """)
+@router.post("/rezerwuj-lot/{id_lotu}", response_class=HTMLResponse)
+async def rezerwuj_lot_endpoint(request: Request, id_lotu: int):
+    user = get_current_user(request)
+    
+    if not user:
+        return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
+
+    conn = get_db_connection()
+    if not conn:
+        return HTMLResponse("Błąd połączenia z bazą danych.")
+
+    pnr = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        cur.execute("SELECT numer_lotu, kierunek FROM Loty WHERE id_lotu = %s", (id_lotu,))
+        lot = cur.fetchone()
+
+        cur.execute("""
+            INSERT INTO rezerwacje_lotow (id_konta, id_lotu, pnr, status) 
+            VALUES (%s, %s, %s, 'Aktywna')
+        """, (user['id'], id_lotu, pnr))
+        conn.commit()
+        
+        return HTMLResponse(f"""
+            <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+                <h1 style="color: #28a745;">Sukces! Zarezerwowano bilet lotniczy.</h1>
+                <p>Twój unikalny kod rezerwacji (PNR) to: <strong>{pnr}</strong></p>
+                <div style="background-color: #f8f9fa; display: inline-block; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <p><strong>Lot:</strong> {lot['numer_lotu']}</p>
+                    <p><strong>Kierunek:</strong> {lot['kierunek']}</p>
+                    <p><strong>Pasażer:</strong> {user.get('imie')}</p>
+                </div>
+                <br><br>
+                <a href='/loty' style="padding: 10px 20px; background-color: #f1c40f; color: black; text-decoration: none; border-radius: 5px; font-weight: bold;">Wróć do tablicy lotów</a>
+            </div>
+        """)
+    except Exception as e:
+        conn.rollback()
+        print(f"Błąd rezerwacji lotu: {e}")
+        return HTMLResponse("<h1>Wystąpił błąd. Możliwe, że ten lot nie istnieje. Spróbuj ponownie.</h1>")
+    finally:
+        cur.close()
+        conn.close()
