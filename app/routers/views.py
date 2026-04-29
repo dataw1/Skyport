@@ -156,7 +156,21 @@ async def sprawdz_parking_endpoint(
             "czy_sukces": czy_sukces
         }
     )
-
+@router.get("/rezerwacja-parkingu", response_class=HTMLResponse)
+async def strona_rezerwacji_parkingu(request: Request, rodzaj: Optional[str] = None):
+    # Pobieramy aktualnego użytkownika
+    user = get_current_user(request)
+    
+    # Przekazujemy parametr 'rodzaj' do szablonu HTML
+    return templates.TemplateResponse(
+        request=request, 
+        name="rezerwacja_parkingu.html", 
+        context={
+            "request": request, 
+            "user": user, 
+            "wybrany_rodzaj": rodzaj  # To poleci do nowego HTML-a
+        }
+    )
 
 @router.get("/mapy", response_class=HTMLResponse)
 async def strona_mapy(request: Request): return templates.TemplateResponse(request=request, name="mapy.html", context={"request": request, "user": get_current_user(request)})
