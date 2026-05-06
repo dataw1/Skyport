@@ -40,45 +40,37 @@
                         <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Lot</th>
                         <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Kierunek</th>
                         <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Data Odjazdu</th>
-                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Status</th>
+                        <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Status i Koszt</th>
                         <th style="padding: 15px; border-bottom: 2px solid #e2e8f0;">Opcje Bagażu</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if nadchodzace_loty %}
-                        {% for lot in nadchodzace_loty %}
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 15px; font-weight: bold; color: #e53e3e; letter-spacing: 1px;">{{ lot.pnr }}</td>
-                            <td style="padding: 15px; font-weight: bold;">{{ lot.numer_lotu }}</td>
-                            <td style="padding: 15px;">{{ lot.kierunek }}</td>
-                            <td style="padding: 15px;">{{ lot.planowo }}</td>
-                            <td style="padding: 15px;">
-                                <span class="status {{ lot.status_css }}" style="padding: 5px 10px; border-radius: 4px; font-size: 13px; font-weight: bold;">{{ lot.status_lotu }}</span>
-                            </td>
-                            <td style="padding: 15px;">
-                                {% if lot.bagaz == 'Brak (Tylko podręczny)' %}
+    {% for lot in nadchodzace_loty %}
+    <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 15px;">
+            <div style="font-weight: bold; font-size: 1.1em; color: #2d3748; margin-bottom: 5px;">
+                {{ lot.koszt_calkowity }} PLN
+            </div>
+            {% if lot.status == 'Oczekuje' or lot.status == 'Nieopłacona' %}
+                <form action="/oplac/{{ lot.pnr }}" method="POST">
+                    <button type="submit" class="btn-yellow" style="width: 100%; padding: 6px;">
+                        💳 Zapłać {{ lot.koszt_calkowity }} zł
+                    </button>
+                </form>
+            {% else %}
+                <span class="status on-time">Opłacona</span>
+            {% endif %}
+        </td>
 
-                                    <form action="/dodaj-bagaz/{{ lot.pnr }}" method="POST" style="display: flex; gap: 5px; margin: 0;">
-                                        <select name="rodzaj_bagazu" style="padding: 6px; border-radius: 4px; border: 1px solid #cbd5e0; font-size: 12px; width: 160px;">
-                                            <option value="Rejestrowany 20kg (+150 PLN)">Rejestrowany 20kg (+150 zł)</option>
-                                            <option value="Dodatkowy podręczny (+50 PLN)">Duży podręczny (+50 zł)</option>
-                                        </select>
-                                        <button type="submit" class="btn-yellow" style="padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                                            Kup
-                                        </button>
-                                    </form>
-                                {% else %}
-                                    <span style="color: #2f855a; font-weight: bold; font-size: 13px; background: #c6f6d5; padding: 6px 10px; border-radius: 4px;">
-                                        ✅ {{ lot.bagaz }}
-                                    </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="6" style="padding: 30px; text-align: center; color: #718096;">Nie masz jeszcze zarezerwowanych przyszłych lotów.</td></tr>
-                    {% endif %}
-                </tbody>
+        <td style="padding: 15px;">
+            {% if lot.bagaz == 'Brak (Tylko podręczny)' %}
+                {% else %}
+                <span style="color: #2f855a; font-weight: bold;">✅ {{ lot.bagaz }}</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
             </table>
         </div>
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form, status
+from fastapi import APIRouter, Request, Form, status, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from psycopg2.extras import RealDictCursor
@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 from app.database import get_db_connection, sprawdz_dostepnosc_miejsc
 from app.security import get_current_user
+from app.emails import wyslij_potwierdzenie_rezerwacji
 
 router = APIRouter(tags=["Widoki Publiczne"])
 templates = Jinja2Templates(directory="templates")
@@ -336,6 +337,9 @@ async def rezerwuj_lot_endpoint(request: Request, id_lotu: int):
     finally:
         cur.close()
         conn.close()
+
+
+        
 @router.get("/przyloty", response_class=HTMLResponse)
 async def strona_przyloty(request: Request, kierunek: Optional[str] = None, data: Optional[str] = None, numer_lotu: Optional[str] = None):
     user = get_current_user(request)
@@ -484,27 +488,85 @@ async def moje_konto(request: Request):
     )
 
 @router.post("/dodaj-bagaz/{pnr}")
-async def endpoint_dodaj_bagaz(request: Request, pnr: str, rodzaj_bagazu: str = Form(...)):
+async def dodaj_bagaz(request: Request, pnr: str, rodzaj_bagazu: str = Form(...)):
     user = get_current_user(request)
     if not user:
         return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
-    
+
+
+    ceny_bagazu = {
+        "Rejestrowany 20kg (+150 PLN)": 150.0,
+        "Dodatkowy podręczny (+50 PLN)": 50.0
+    }
+    dodatkowy_koszt = ceny_bagazu.get(rodzaj_bagazu, 0.0)
+
     conn = get_db_connection()
     if conn:
         try:
             cur = conn.cursor()
-            # Zabezpieczamy zapytanie, aby użytkownik mógł dodać bagaż tylko do SWOJEJ rezerwacji
+
             cur.execute("""
                 UPDATE rezerwacje_lotow 
-                SET bagaz = %s 
+                SET bagaz = %s, koszt_calkowity = koszt_calkowity + %s 
                 WHERE pnr = %s AND id_konta = %s
-            """, (rodzaj_bagazu, pnr, user['id']))
+            """, (rodzaj_bagazu, dodatkowy_koszt, pnr, user['id']))
             conn.commit()
         except Exception as e:
-            print(f"Błąd dodawania bagażu: {e}")
+            print(f"Błąd podczas dodawania bagażu: {e}")
+            conn.rollback()
         finally:
             cur.close()
             conn.close()
+
+    return RedirectResponse(url="/moje-konto", status_code=status.HTTP_303_SEE_OTHER)
+
+
+
+@router.post("/oplac/{pnr}")
+async def oplac_rezerwacje(request: Request, pnr: str, background_tasks: BackgroundTasks):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
+
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
             
-    # Odśwież stronę po dodaniu bagażu
-    return RedirectResponse(url="/moje-konto", status_code=status.HTTP_302_FOUND)
+            cur.execute("""
+                UPDATE rezerwacje_lotow 
+                SET status = 'Opłacona' 
+                WHERE pnr = %s AND id_konta = %s
+                RETURNING id_lotu, koszt_calkowity
+            """, (pnr, user['id']))
+            
+            wynik = cur.fetchone()
+            
+            if wynik:
+                id_lotu = wynik['id_lotu']
+                kwota = wynik['koszt_calkowity']
+                
+                cur.execute("SELECT numer_lotu, skad, dokad, planowo FROM loty WHERE id_lotu = %s", (id_lotu,))
+                lot = cur.fetchone()
+                
+                background_tasks.add_task(
+                    wyslij_potwierdzenie_rezerwacji,
+                    email_odbiorcy=user['email'],
+                    imie=user.get('imie', 'Pasażerze'),
+                    pnr=pnr,
+                    numer_lotu=lot['numer_lotu'],
+                    skad=lot['skad'],
+                    dokad=lot['dokad'],
+                    data=lot['planowo'].strftime('%d.%m.%Y %H:%M') if lot['planowo'] else "Do ustalenia",
+                    kwota=kwota
+                )
+            
+            conn.commit()
+        except Exception as e:
+            print(f"Błąd płatności: {e}")
+            conn.rollback()
+        finally:
+            cur.close()
+            conn.close()
+
+    return RedirectResponse(url="/moje-konto?msg=payment_success", status_code=status.HTTP_302_FOUND)
