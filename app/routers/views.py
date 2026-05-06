@@ -393,3 +393,118 @@ async def strona_przyloty(request: Request, kierunek: Optional[str] = None, data
     
     return templates.TemplateResponse(request=request, name="przyloty.html", context={"request": request, "user": user, "loty": przyloty})
 
+@router.get("/moje-konto", response_class=HTMLResponse)
+async def moje_konto(request: Request):
+    user = get_current_user(request)
+    
+    if not user:
+        return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
+
+    conn = get_db_connection()
+    nadchodzace_loty = []
+    historia_lotow = []
+    moje_parkingi = []
+    
+    if conn:
+        try:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            
+            # Pobieranie rezerwacji lotów użytkownika z uwzględnieniem bagażu
+            cur.execute("""
+                SELECT r.pnr, r.status AS status_rezerwacji, r.data_rezerwacji, r.bagaz,
+                       l.numer_lotu, l.kierunek, l.planowo, l.bramka, l.status AS status_lotu
+                FROM rezerwacje_lotow r
+                JOIN loty l ON r.id_lotu = l.id_lotu
+                WHERE r.id_konta = %s
+                ORDER BY l.planowo ASC
+            """, (user['id'],))
+            loty_db = cur.fetchall()
+            
+            for lot in loty_db:
+                planowo_data = lot.get('planowo')
+                czy_przyszly = planowo_data > datetime.now() if planowo_data else False
+                
+                status_css = "on-time"
+                if lot['status_lotu'].lower() == 'opóźniony': status_css = "delayed"
+                elif lot['status_lotu'].lower() == 'boarding': status_css = "boarding"
+                elif lot['status_lotu'].lower() == 'odwołany': status_css = "delayed"
+                
+                lot_info = {
+                    "pnr": lot['pnr'],
+                    "numer_lotu": lot['numer_lotu'],
+                    "kierunek": lot['kierunek'],
+                    "planowo": planowo_data.strftime('%d.%m.%Y %H:%M') if planowo_data else 'Brak',
+                    "bramka": lot.get('bramka', '-'),
+                    "status_lotu": lot['status_lotu'],
+                    "status_css": status_css,
+                    "bagaz": lot.get('bagaz', 'Brak (Tylko podręczny)'),
+                    "data_rezerwacji": lot['data_rezerwacji'].strftime('%d.%m.%Y') if lot['data_rezerwacji'] else ''
+                }
+                
+                # Rozdzielamy loty do dwóch list
+                if czy_przyszly:
+                    nadchodzace_loty.append(lot_info)
+                else:
+                    historia_lotow.insert(0, lot_info) # Historia od najnowszych
+
+            # Pobieranie rezerwacji parkingu
+            cur.execute("""
+                SELECT rodzaj_parkingu, nr_rejestracyjny, data_przyjazdu, data_wyjazdu, status
+                FROM rezerwacje_parkingu
+                WHERE id_konta = %s
+                ORDER BY data_przyjazdu DESC
+            """, (user['id'],))
+            parkingi_db = cur.fetchall()
+            
+            for p in parkingi_db:
+                moje_parkingi.append({
+                    "rodzaj": p['rodzaj_parkingu'],
+                    "rejestracja": p['nr_rejestracyjny'],
+                    "przyjazd": p['data_przyjazdu'].strftime('%d.%m.%Y %H:%M'),
+                    "wyjazd": p['data_wyjazdu'].strftime('%d.%m.%Y %H:%M'),
+                    "status": p['status']
+                })
+
+        except Exception as e:
+            print(f"Błąd pobierania danych konta: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
+    return templates.TemplateResponse(
+        request=request, 
+        name="moje_konto.html", 
+        context={
+            "request": request, 
+            "user": user, 
+            "nadchodzace_loty": nadchodzace_loty,
+            "historia_lotow": historia_lotow,
+            "moje_parkingi": moje_parkingi
+        }
+    )
+
+@router.post("/dodaj-bagaz/{pnr}")
+async def endpoint_dodaj_bagaz(request: Request, pnr: str, rodzaj_bagazu: str = Form(...)):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
+    
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            # Zabezpieczamy zapytanie, aby użytkownik mógł dodać bagaż tylko do SWOJEJ rezerwacji
+            cur.execute("""
+                UPDATE rezerwacje_lotow 
+                SET bagaz = %s 
+                WHERE pnr = %s AND id_konta = %s
+            """, (rodzaj_bagazu, pnr, user['id']))
+            conn.commit()
+        except Exception as e:
+            print(f"Błąd dodawania bagażu: {e}")
+        finally:
+            cur.close()
+            conn.close()
+            
+    # Odśwież stronę po dodaniu bagażu
+    return RedirectResponse(url="/moje-konto", status_code=status.HTTP_302_FOUND)
