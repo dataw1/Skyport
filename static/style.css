@@ -283,3 +283,265 @@ td {
     margin-left: 20px;
     color: #718096;
 }
+/* =========================================
+   SKYPORT - GŁÓWNY ARKUSZ STYLÓW (style.css)
+   ========================================= */
+
+/* --- 1. RESET I BAZA --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f7fafc;
+    color: #2d3748;
+    line-height: 1.6;
+}
+
+main {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+h1, h2, h3 {
+    color: #1a365d;
+    margin-bottom: 15px;
+}
+
+/* --- 2. GÓRNE MENU (NAVBAR) --- */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.navbar .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1a365d;
+}
+
+.navbar .logo a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #4a5568;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: #ecc94b;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* --- 3. PRZYCISKI --- */
+.btn-yellow {
+    background-color: #ecc94b;
+    color: #1a365d;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-yellow:hover {
+    background-color: #d6b543;
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    border: 2px solid #cbd5e0;
+    color: #4a5568;
+    background: transparent;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.btn-outline:hover {
+    border-color: #1a365d;
+    color: #1a365d;
+}
+
+/* --- 4. WYSZUKIWARKA LOTÓW (WIDGET) --- */
+.search-widget {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 1000px;
+    margin: 30px auto;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.search-tabs {
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+.search-tabs a {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    padding-bottom: 12px;
+    margin-bottom: -11px;
+    color: #718096;
+}
+
+.search-tabs a.active {
+    color: #1a365d;
+    border-bottom: 3px solid #1a365d;
+}
+
+.search-form {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.search-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.search-group label {
+    display: block;
+    font-weight: bold;
+    color: #1a365d;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.search-group input, .search-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #4a5568;
+}
+
+/* --- 5. TABELE DANYCH (LOTY / KONTO) --- */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 40px;
+    overflow: hidden; /* Zaokrągla rogi tabeli */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th {
+    padding: 15px;
+    border-bottom: 2px solid #e2e8f0;
+    background-color: #f8f9fa;
+    color: #4a5568;
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #2d3748;
+}
+
+tr:hover {
+    background-color: #fcfdfd;
+}
+
+tr.disabled {
+    background-color: #f7fafc;
+    opacity: 0.7;
+}
+
+/* --- 6. STATUSY LOTÓW (ZNAKOWANIE KOLORAMI) --- */
+.status {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.status.on-time {
+    background-color: #c6f6d5;
+    color: #2f855a;
+}
+
+.status.delayed {
+    background-color: #fed7d7;
+    color: #c53030;
+}
+
+.status.boarding {
+    background-color: #feebc8;
+    color: #c05621;
+}
+
+/* --- 7. PAGINACJA (NUMERY STRON) --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 20px;
+}
+
+.pagination a, .pagination span {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #2d3748;
+    background-color: white;
+    font-weight: bold;
+}
+
+.pagination span.active {
+    background-color: #2b6cb0;
+    color: white;
+    border-color: #2b6cb0;
+}
+
+.pagination a:hover {
+    background-color: #edf2f7;
+}
