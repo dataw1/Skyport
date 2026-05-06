@@ -15,4 +15,6 @@ py -m pip install python-dotenv
 
 # SKOPIUJ plik .env.example, zmień jego nazwę na .env i uzupełnij w nim swoje dane logowania do bazy!
 
+pip install fastapi-mail
+
 py -m uvicorn app.main:app --reload
