@@ -19,113 +19,127 @@
             <a href="/bezpieczenstwo">Informacje o Bezpieczeństwie</a>
         </nav>
         <div class="nav-actions">
-            {% if user.rola == 'pasazer' %}
-                <a href="/moje-konto" class="btn-yellow" style="margin-right: 10px;">👤 Moje Konto</a>
-            {% endif %}
             {% if user %}
-            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+                {% if user.rola == 'pasazer' %}
+                    <a href="/moje-konto" class="btn-yellow" style="margin-right: 10px;">👤 Moje Konto</a>
+                {% endif %}
+                
+                <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
 
-            {% if user.rola == 'admin' %}
-            <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
-            {% endif %}
-            
-            {% if user.rola == 'pracownik' or user.rola == 'admin' %}
-            <a href="/pracownik" class="btn-outline" style="margin-right: 10px;">📋 Panel Pracownika</a>
-            {% endif %}
+                {% if user.rola == 'admin' %}
+                    <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
+                {% endif %}
+                
+                {% if user.rola == 'pracownik' or user.rola == 'admin' %}
+                    <a href="/pracownik" class="btn-outline" style="margin-right: 10px;">📋 Panel Pracownika</a>
+                {% endif %}
 
-            <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+                <a href="/wyloguj" class="btn-outline">Wyloguj</a>
             {% else %}
-            <a href="/logowanie" class="btn-outline">Logowanie</a>
+                <a href="/logowanie" class="btn-outline">Logowanie</a>
             {% endif %}
 
-            <button class="lang-btn">🌐 PL</button>
-            <a href="/pomoc" class="help-link">❓ Centrum Pomocy</a>
+            <button class="lang-btn" style="margin-left: 10px; background: none; border: 1px solid #cbd5e0; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🌐 PL</button>
+            <a href="/pomoc" class="help-link" style="margin-left: 15px; text-decoration: none; color: #4a5568; font-size: 14px;">❓ Centrum Pomocy</a>
         </div>
     </header>
 
     <main>
-        <section class="flight-search">
-            <div class="tabs">
-                <button class="tab active" id="btn-odloty">🛫 Odloty</button>
-                <button class="tab" id="btn-przyloty">🛬 Przyloty</button>
+        <div class="search-widget">
+            <div class="search-tabs">
+                <a href="/loty" class="active">🛫 Odloty</a>
+                <a href="/przyloty">🛬 Przyloty</a>
             </div>
-            <form action="{{ request.url.path }}" method="GET" class="search-form">
-                <div class="input-group">
+            <form action="/loty" method="GET" class="search-form">
+                <div class="search-group">
                     <label>Kierunek</label>
                     <input type="text" name="kierunek" placeholder="📍 Miasto lub kod lotniska" value="{{ request.query_params.get('kierunek', '') }}">
                 </div>
-                <div class="input-group">
+                <div class="search-group">
                     <label>Data</label>
                     <input type="date" name="data" value="{{ request.query_params.get('data', '') }}">
                 </div>
-                <div class="input-group">
+                <div class="search-group">
                     <label>Numer Lotu</label>
                     <input type="text" name="numer_lotu" placeholder="✈️ np. BA123" value="{{ request.query_params.get('numer_lotu', '') }}">
                 </div>
-                <button type="submit" class="btn-primary">🔍 Szukaj Lotów</button>
-                
-                {% if request.query_params.get('kierunek') or request.query_params.get('data') or request.query_params.get('numer_lotu') %}
-                    <a href="{{ request.url.path }}" class="btn-outline" style="padding: 14px 20px; text-decoration: none; display: flex; align-items: center; border-color: #e53e3e; color: #e53e3e;">✖ Wyczyść</a>
-                {% endif %}
+                <button type="submit" class="btn-yellow" style="height: 42px; margin-top: 27px;">🔍 Szukaj Lotów</button>
             </form>
+        </div>
+
+        <section class="flight-board" style="max-width: 1000px; margin: 40px auto;">
+            <h2 style="margin-bottom: 20px;">✈️ Tablica Odlotów na Żywo</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nr Lotu</th>
+                            <th>Kierunek</th>
+                            <th>Planowo</th>
+                            <th>Bramka</th>
+                            <th>Status</th>
+                            <th>Rezerwacja</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if loty %}
+                            {% for lot in loty %}
+                            <tr {% if not lot.czy_przyszly %}class="disabled"{% endif %}>
+                                <td style="font-weight: bold;">{{ lot.numer_lotu }}</td>
+                                <td>{{ lot.kierunek }}</td>
+                                <td>{{ lot.planowo }}</td>
+                                <td style="font-weight: bold;">{{ lot.bramka }}</td>
+                                <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
+                                <td>
+                                    {% if lot.czy_przyszly %}
+                                        {% if user %}
+                                            <form action="/rezerwuj-lot/{{ lot.id_lotu }}" method="POST" style="margin: 0;">
+                                                <button type="submit" class="btn-yellow" style="padding: 5px 10px; font-size: 12px;">Zarezerwuj</button>
+                                            </form>
+                                        {% else %}
+                                            <a href="/logowanie" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Zaloguj się</a>
+                                        {% endif %}
+                                    {% else %}
+                                        <span style="color: #718096; font-size: 12px; background: #edf2f7; padding: 5px 10px; border-radius: 4px;">Zakończony</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="6" style="text-align: center; padding: 20px;">Nie znaleziono lotów.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="/loty" class="btn-outline">Pokaż pełną listę lotów ➔</a>
+            </div>
         </section>
 
-        <section class="flight-board">
-            <h2>✈️ Tablica Odlotów na Żywo</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nr Lotu</th>
-                        <th>Kierunek</th>
-                        <th>Planowo</th>
-                        <th>Bramka</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if loty %}
-                        {% for lot in loty %}
-                        <tr>
-                            <td>{{ lot.numer_lotu }}</td>
-                            <td>{{ lot.kierunek }}</td>
-                            <td>{{ lot.planowo }}</td>
-                            <td>{{ lot.bramka }}</td>
-                            <td><span class="status {{ lot.status_css }}">{{ lot.status }}</span></td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px;">Nie znaleziono lotów spełniających podane kryteria.</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </section>
-
-        <section class="services">
-            <h2>Usługi dla Pasażerów</h2>
-            <div class="services-grid">
-                <div class="service-card">
+        <section class="services" style="margin-top: 60px;">
+            <h2 style="text-align: center; margin-bottom: 30px;">Usługi dla Pasażerów</h2>
+            <div class="services-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div class="service-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
                     <h3>⚡ Fast Track</h3>
                     <p>Omiń kolejki dzięki przyspieszonej kontroli bezpieczeństwa</p>
                 </div>
-                <div class="service-card">
+                <div class="service-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
                     <h3>☕ Dostęp do Saloniku</h3>
                     <p>Zrelaksuj się w komforcie przed lotem</p>
                 </div>
-                <div class="service-card">
+                <div class="service-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
                     <h3>🛍️ Strefa Bezcłowa</h3>
                     <p>Przeglądaj ekskluzywne zakupy i oszczędności</p>
                 </div>
-                <div class="service-card">
+                <div class="service-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
                     <h3>📦 Biuro Rzeczy Znalezionych</h3>
                     <p>Zgłoś lub odbierz zgubione przedmioty</p>
                 </div>
-                <div class="service-card">
+                <div class="service-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
                     <h3>🚗 Transport</h3>
                     <p>Transfery lotniskowe i usługi wynajmu samochodów</p>
                 </div>
-                <div class="service-card">
+                <div class="service-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
                     <h3>♿ Pomoc Specjalna</h3>
                     <p>Wsparcie dla pasażerów o ograniczonej sprawności ruchowej</p>
                 </div>
@@ -133,17 +147,16 @@
         </section>
     </main>
 
-    <footer class="site-footer">
-        <div class="footer-bottom">
+    <footer class="site-footer" style="margin-top: 80px; padding: 40px 0; border-top: 1px solid #e2e8f0; background: white;">
+        <div class="footer-bottom" style="text-align: center; color: #718096; font-size: 14px;">
             <p>&copy; 2026 SkyPort. Wszelkie prawa zastrzeżone.</p>
-            <div class="legal-links">
-                <a href="#">Polityka Prywatności</a>
-                <a href="#">Warunki Świadczenia Usług</a>
-                <a href="#">Polityka Cookies</a>
+            <div class="legal-links" style="margin-top: 10px; display: flex; justify-content: center; gap: 20px;">
+                <a href="#" style="color: #718096; text-decoration: none;">Polityka Prywatności</a>
+                <a href="#" style="color: #718096; text-decoration: none;">Warunki Świadczenia Usług</a>
+                <a href="#" style="color: #718096; text-decoration: none;">Polityka Cookies</a>
             </div>
         </div>
     </footer>
 
-    
 </body>
 </html>
