@@ -47,12 +47,19 @@ async def rejestracja_post(imie: str = Form(...), nazwisko: str = Form(...), ema
 @router.post("/auth/login")
 async def logowanie_post(email: str = Form(...), haslo: str = Form(...)):
     conn = get_db_connection()
+    
+    if not conn:
+        return RedirectResponse(url="/logowanie?error=db_error", status_code=status.HTTP_302_FOUND)
+
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    # TEJ LINIJKI BRAKOWAŁO (Ty miałeś od razu fetchone):
     cur.execute("SELECT * FROM Konta WHERE email = %s", (email,))
+    
     user_db = cur.fetchone()
 
     if user_db and pwd_context.verify(haslo, user_db['haslo']):
-        imie_uzytkownika = "Admin" 
+        imie_uzytkownika = "Admin"
         if user_db['rola'] == 'pasazer':
             cur.execute("SELECT imie FROM Pasazerowie WHERE id_konta = %s", (user_db['id_konta'],))
             pasazer = cur.fetchone()
