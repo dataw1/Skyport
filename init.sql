@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict k71yB9Ni6PlEBvPdhA9nymeqbuSYmMgfevmaWEvsYQZdHLRhVpFWCPS1kF0yIJ9
+--\restrict k71yB9Ni6PlEBvPdhA9nymeqbuSYmMgfevmaWEvsYQZdHLRhVpFWCPS1kF0yIJ9
 
 -- Dumped from database version 17.9
 -- Dumped by pg_dump version 17.9
@@ -720,5 +720,5 @@ ALTER TABLE ONLY public.rezerwacje_parkingu
 -- PostgreSQL database dump complete
 --
 
-\unrestrict k71yB9Ni6PlEBvPdhA9nymeqbuSYmMgfevmaWEvsYQZdHLRhVpFWCPS1kF0yIJ9
+--\unrestrict k71yB9Ni6PlEBvPdhA9nymeqbuSYmMgfevmaWEvsYQZdHLRhVpFWCPS1kF0yIJ9
 
