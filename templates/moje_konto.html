@@ -45,32 +45,59 @@
                     </tr>
                 </thead>
                 <tbody>
-    {% for lot in nadchodzace_loty %}
-    <tr style="border-bottom: 1px solid #e2e8f0;">
-        <td style="padding: 15px;">
-            <div style="font-weight: bold; font-size: 1.1em; color: #2d3748; margin-bottom: 5px;">
-                {{ lot.koszt_calkowity }} PLN
-            </div>
-            {% if lot.status == 'Oczekuje' or lot.status == 'Nieopłacona' %}
-                <form action="/oplac/{{ lot.pnr }}" method="POST">
-                    <button type="submit" class="btn-yellow" style="width: 100%; padding: 6px;">
-                        💳 Zapłać {{ lot.koszt_calkowity }} zł
-                    </button>
-                </form>
-            {% else %}
-                <span class="status on-time">Opłacona</span>
-            {% endif %}
-        </td>
+                    {% if nadchodzace_loty %}
+                        {% for lot in nadchodzace_loty %}
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 15px; font-weight: bold; color: #2d3748;">{{ lot.pnr }}</td>
+                            
+                            <td style="padding: 15px; font-weight: bold; color: #4a5568;">{{ lot.numer_lotu }}</td>
+                            
+                            <td style="padding: 15px;">{{ lot.kierunek }}</td>
+                            
+                            <td style="padding: 15px;">{{ lot.planowo }}</td>
+                            
+                            <td style="padding: 15px; text-align: center; min-width: 150px;">
+                                <div style="font-weight: bold; margin-bottom: 10px; color: #1a365d; text-align: left;">
+                                    Koszt: {{ lot.koszt_calkowity }} PLN
+                                </div>
+                                
+                                {% if lot.status_rezerwacji == 'Opłacona' %}
+                                    <div style="display: inline-block; width: 100%; padding: 8px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 5px; font-weight: bold; box-sizing: border-box;">
+                                        ✓ Opłacona
+                                    </div>
+                                {% else %}
+                                    <form action="/oplac/{{ lot.pnr }}" method="POST">
+                                        <button type="submit" class="btn-yellow" style="width: 100%; padding: 8px; border: none; cursor: pointer; border-radius: 5px; font-weight: bold;">
+                                            💳 Opłać bilet
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
 
-        <td style="padding: 15px;">
-            {% if lot.bagaz == 'Brak (Tylko podręczny)' %}
-                {% else %}
-                <span style="color: #2f855a; font-weight: bold;">✅ {{ lot.bagaz }}</span>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
+                            <td style="padding: 15px;">
+                                {% if lot.status_rezerwacji == 'Aktywna' %}
+                                    <div style="margin-bottom: 8px;">Wybrano: <strong>{{ lot.bagaz }}</strong></div>
+                                    <form action="/dodaj-bagaz/{{ lot.pnr }}" method="POST" style="display: flex; flex-direction: column; gap: 5px;">
+                                        <select name="rodzaj_bagazu" style="padding: 6px; border-radius: 4px; border: 1px solid #cbd5e0; font-size: 13px;">
+                                            <option value="Dodatkowy podręczny (+50 PLN)">Dod. podręczny (+50 PLN)</option>
+                                            <option value="Rejestrowany 20kg (+150 PLN)">Rejestrowany 20kg (+150 PLN)</option>
+                                        </select>
+                                        <button type="submit" style="padding: 6px; background-color: #e2e8f0; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">
+                                            ➕ Dodaj bagaż
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span style="color: #2f855a; font-weight: bold;">✅ {{ lot.bagaz }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="padding: 30px; text-align: center; color: #718096;">Brak nadchodzących lotów.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
             </table>
         </div>
 
@@ -132,6 +159,14 @@
                     {% else %}
                         <tr><td colspan="5" style="padding: 30px; text-align: center; color: #718096;">Brak rezerwacji miejsc parkingowych.</td></tr>
                     {% endif %}
+                    <script>
+                        const urlParams = new URLSearchParams(window.location.search);
+                        if (urlParams.get('msg') === 'payment_success') {
+                            alert("✅ Sukces! Bilet został opłacony, a potwierdzenie zostało wysłane na Twojego maila.");
+
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        }
+                    </script>
                 </tbody>
             </table>
         </div>

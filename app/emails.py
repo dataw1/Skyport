@@ -4,17 +4,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 conf = ConnectionConfig(
     MAIL_USERNAME = os.getenv("MAIL_USERNAME"),
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD"),
     MAIL_FROM = os.getenv("MAIL_FROM", "rezerwacje@skyport.pl"),
     MAIL_PORT = int(os.getenv("MAIL_PORT", 2525)),
     MAIL_SERVER = os.getenv("MAIL_SERVER", "sandbox.smtp.mailtrap.io"),
-    MAIL_STARTTLS = False,
+    MAIL_STARTTLS = True,   # <-- TO MUSI BYĆ TRUE
     MAIL_SSL_TLS = False,
     USE_CREDENTIALS = True,
-    VALIDATE_CERTS = True
+    VALIDATE_CERTS = False  # <-- TO MUSI BYĆ FALSE DLA DOCKERA
 )
 
 async def wyslij_potwierdzenie_rezerwacji(email_odbiorcy: str, imie: str, pnr: str, numer_lotu: str, skad: str, dokad: str, data: str, kwota: float):
@@ -32,6 +31,7 @@ async def wyslij_potwierdzenie_rezerwacji(email_odbiorcy: str, imie: str, pnr: s
                 <li style="margin-bottom: 10px;">🛫 <strong>Lot:</strong> {numer_lotu}</li>
                 <li style="margin-bottom: 10px;">📍 <strong>Trasa:</strong> {skad} ➔ {dokad}</li>
                 <li style="margin-bottom: 10px;">📅 <strong>Data wylotu:</strong> {data}</li>
+                <li style="margin-bottom: 10px;">💰 <strong>Zapłacono:</strong> {kwota} PLN</li>
             </ul>
         </div>
         
@@ -40,7 +40,6 @@ async def wyslij_potwierdzenie_rezerwacji(email_odbiorcy: str, imie: str, pnr: s
     </div>
     """
 
-
     message = MessageSchema(
         subject=f"Potwierdzenie płatności za lot {numer_lotu} (PNR: {pnr})",
         recipients=[email_odbiorcy],
@@ -48,7 +47,9 @@ async def wyslij_potwierdzenie_rezerwacji(email_odbiorcy: str, imie: str, pnr: s
         subtype=MessageType.html
     )
 
-
-    fm = FastMail(conf)
-    await fm.send_message(message)
-    print(f"E-mail z potwierdzeniem wysłany do {email_odbiorcy} (PNR: {pnr})")
+    try:
+        fm = FastMail(conf)
+        await fm.send_message(message)
+        print(f"✅ E-mail z potwierdzeniem wysłany do {email_odbiorcy} (PNR: {pnr})")
+    except Exception as e:
+        print(f"❌ Błąd wysyłki e-mail: {e}")

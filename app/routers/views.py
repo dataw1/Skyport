@@ -312,8 +312,8 @@ async def rezerwuj_lot_endpoint(request: Request, id_lotu: int):
             ''')
 
         cur.execute("""
-            INSERT INTO rezerwacje_lotow (id_konta, id_lotu, pnr, status) 
-            VALUES (%s, %s, %s, 'Aktywna')
+            INSERT INTO rezerwacje_lotow (id_konta, id_lotu, pnr, status, koszt_calkowity) 
+            VALUES (%s, %s, %s, 'Aktywna', 300.00)
         """, (user['id'], id_lotu, pnr))
         conn.commit()
         
@@ -415,7 +415,7 @@ async def moje_konto(request: Request):
             
             # Pobieranie rezerwacji lotów użytkownika z uwzględnieniem bagażu
             cur.execute("""
-                SELECT r.pnr, r.status AS status_rezerwacji, r.data_rezerwacji, r.bagaz,
+                SELECT r.pnr, r.status AS status_rezerwacji, r.data_rezerwacji, r.bagaz, r.koszt_calkowity,
                        l.numer_lotu, l.kierunek, l.planowo, l.bramka, l.status AS status_lotu
                 FROM rezerwacje_lotow r
                 JOIN loty l ON r.id_lotu = l.id_lotu
@@ -442,7 +442,9 @@ async def moje_konto(request: Request):
                     "status_lotu": lot['status_lotu'],
                     "status_css": status_css,
                     "bagaz": lot.get('bagaz', 'Brak (Tylko podręczny)'),
-                    "data_rezerwacji": lot['data_rezerwacji'].strftime('%d.%m.%Y') if lot['data_rezerwacji'] else ''
+                    "koszt_calkowity": lot.get('koszt_calkowity') or 300.0,
+                    "data_rezerwacji": lot['data_rezerwacji'].strftime('%d.%m.%Y') if lot['data_rezerwacji'] else '',
+                    "status_rezerwacji": lot['status_rezerwacji']
                 }
                 
                 # Rozdzielamy loty do dwóch list
@@ -507,7 +509,7 @@ async def dodaj_bagaz(request: Request, pnr: str, rodzaj_bagazu: str = Form(...)
 
             cur.execute("""
                 UPDATE rezerwacje_lotow 
-                SET bagaz = %s, koszt_calkowity = koszt_calkowity + %s 
+                SET bagaz = %s, koszt_calkowity = COALESCE(koszt_calkowity, 300) + %s 
                 WHERE pnr = %s AND id_konta = %s
             """, (rodzaj_bagazu, dodatkowy_koszt, pnr, user['id']))
             conn.commit()
@@ -533,6 +535,12 @@ async def oplac_rezerwacje(request: Request, pnr: str, background_tasks: Backgro
         try:
             cur = conn.cursor(cursor_factory=RealDictCursor)
             
+            cur.execute("SELECT status FROM rezerwacje_lotow WHERE pnr = %s AND id_konta = %s", (pnr, user['id']))
+            aktualna_rezerwacja = cur.fetchone()
+            
+            if not aktualna_rezerwacja or aktualna_rezerwacja['status'] == 'Opłacona':
+                return RedirectResponse(url="/moje-konto", status_code=status.HTTP_302_FOUND)
+            
             cur.execute("""
                 UPDATE rezerwacje_lotow 
                 SET status = 'Opłacona' 
@@ -546,7 +554,7 @@ async def oplac_rezerwacje(request: Request, pnr: str, background_tasks: Backgro
                 id_lotu = wynik['id_lotu']
                 kwota = wynik['koszt_calkowity']
                 
-                cur.execute("SELECT numer_lotu, skad, dokad, planowo FROM loty WHERE id_lotu = %s", (id_lotu,))
+                cur.execute("SELECT numer_lotu, kierunek, planowo FROM Loty WHERE id_lotu = %s", (id_lotu,))
                 lot = cur.fetchone()
                 
                 background_tasks.add_task(
@@ -555,16 +563,18 @@ async def oplac_rezerwacje(request: Request, pnr: str, background_tasks: Backgro
                     imie=user.get('imie', 'Pasażerze'),
                     pnr=pnr,
                     numer_lotu=lot['numer_lotu'],
-                    skad=lot['skad'],
-                    dokad=lot['dokad'],
+                    skad="Warszawa",         
+                    dokad=lot['kierunek'],  
                     data=lot['planowo'].strftime('%d.%m.%Y %H:%M') if lot['planowo'] else "Do ustalenia",
                     kwota=kwota
                 )
             
             conn.commit()
+            
         except Exception as e:
             print(f"Błąd płatności: {e}")
             conn.rollback()
+            return RedirectResponse(url="/moje-konto?error=payment_failed", status_code=status.HTTP_302_FOUND)
         finally:
             cur.close()
             conn.close()
