@@ -10,3 +10,4 @@ jinja2
 fastapi-mail
 email-validator
 mailtrap
+yoyo-migrations
