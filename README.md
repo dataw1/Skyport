@@ -78,3 +78,8 @@ Skopiuj plik `.env.example`, zmień jego nazwę na `.env` i uzupełnij w nim swo
 ```bash
 py -m uvicorn app.main:app --reload
 ```
+
+Wgrywanie danych testowych przy użyciu komendy : 
+```bash
+docker-compose exec web python wgraj_dane.py
+```
