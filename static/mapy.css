@@ -10,8 +10,9 @@ h2 { color: #1a365d; margin-bottom: 20px; }
 
 .terminals-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(2, minmax(300px, 450px));
+    justify-content: center; 
+    gap: 30px;
 }
 .terminal-card {
     background: #fff;
