@@ -10,10 +10,10 @@ conf = ConnectionConfig(
     MAIL_FROM = os.getenv("MAIL_FROM", "rezerwacje@skyport.pl"),
     MAIL_PORT = int(os.getenv("MAIL_PORT", 2525)),
     MAIL_SERVER = os.getenv("MAIL_SERVER", "sandbox.smtp.mailtrap.io"),
-    MAIL_STARTTLS = True,   # <-- TO MUSI BYĆ TRUE
+    MAIL_STARTTLS = True,   
     MAIL_SSL_TLS = False,
     USE_CREDENTIALS = True,
-    VALIDATE_CERTS = False  # <-- TO MUSI BYĆ FALSE DLA DOCKERA
+    VALIDATE_CERTS = False  
 )
 
 async def wyslij_potwierdzenie_rezerwacji(email_odbiorcy: str, imie: str, pnr: str, numer_lotu: str, skad: str, dokad: str, data: str, kwota: float):

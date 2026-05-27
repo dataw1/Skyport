@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyPort - Zarządzanie</title>
+    <title>SkyPort - Panel Pracownika</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/admin_panel.css">
     <style>
@@ -20,7 +20,7 @@
             <span class="icon">✈️</span> <a href="/">SkyPort</a>
         </div>
         <div class="nav-actions">
-            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, Pracowniku!</span>
             <a href="/wyloguj" class="btn-outline">Wyloguj</a>
         </div>
     </header>
@@ -28,16 +28,13 @@
     <div class="admin-container">
         <aside class="admin-sidebar">
             <ul class="sidebar-menu">
-                <li class="active"><a href="/admin">📊 Loty</a></li>
-                <li><a href="/admin/uzytkownicy">👥 Użytkownicy</a></li>
-                <li><a href="/admin/rezerwacje">🎫 Rezerwacje</a></li>
+                <li class="active"><a href="/pracownik">📊 Obsługa Lotów</a></li>
             </ul>
         </aside>
 
         <main class="admin-main">
             <div class="admin-header">
-                <h1>Zarządzanie Lotami</h1>
-                <a href="/admin/dodaj_lot" class="btn-yellow" style="text-decoration: none;">+ Dodaj Nowy Lot</a>
+                <h1>Zarządzanie Tablicą Lotów</h1>
             </div>
 
             <section class="admin-content-section">
@@ -47,7 +44,6 @@
                             <th>Szczegóły Lotu</th>
                             <th>Bramka (Gate)</th>
                             <th>Status i Szybka Zmiana</th>
-                            <th>Akcje</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -62,7 +58,7 @@
                             </td>
                             
                             <td>
-                                <form action="/admin/zmien_bramke/{{ lot.id }}" method="POST" class="inline-form-group">
+                                <form action="/pracownik/zmien_bramke/{{ lot.id_lotu }}" method="POST" class="inline-form-group">
                                     <select name="nowa_bramka" class="inline-select">
                                         <option value="">Brak</option>
                                         <optgroup label="Sektor A">
@@ -80,20 +76,18 @@
                             <td>
                                 <div class="gate-status-cell">
                                     <span class="status {{ lot.status_css }}">{{ lot.status }}</span>
-                                    <form action="/admin/zmien_status/{{ lot.id }}" method="POST" class="inline-form-group">
+                                    <form action="/pracownik/zmien_status/{{ lot.id_lotu }}" method="POST" class="inline-form-group">
                                         <select name="nowy_status" class="inline-select">
                                             <option value="O czasie" {% if lot.status == 'O czasie' %}selected{% endif %}>O czasie</option>
                                             <option value="Opóźniony" {% if lot.status == 'Opóźniony' %}selected{% endif %}>Opóźniony</option>
                                             <option value="Boarding" {% if lot.status == 'Boarding' %}selected{% endif %}>Boarding</option>
+                                            <option value="Odwołany" {% if lot.status == 'Odwołany' %}selected{% endif %}>Odwołany</option>
                                         </select>
                                         <button type="submit" class="btn-ok">Zapisz</button>
                                     </form>
                                 </div>
                             </td>
 
-                            <td>
-                                <a href="/admin/edytuj/{{ lot.id }}" class="action-btn edit-btn">Pełna Edycja</a>
-                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -102,7 +96,7 @@
                 {% if total_pages > 1 %}
                 <div class="pagination">
                     {% for p in page_range %}
-                        <a href="/admin?page={{ p }}" class="page-link {% if p == current_page %}active{% endif %}">{{ p }}</a>
+                        <a href="/pracownik?page={{ p }}" class="page-link {% if p == current_page %}active{% endif %}">{{ p }}</a>
                     {% endfor %}
                 </div>
                 {% endif %}

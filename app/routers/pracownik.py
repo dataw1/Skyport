@@ -70,24 +70,43 @@ async def panel_pracownika(request: Request, page: int = 1):
     )
 
 @router.post("/zmien_status/{id_lotu}")
-async def pracownik_zmien_status(id_lotu: int, nowy_status: str = Form(...)):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("UPDATE Loty SET status = %s WHERE id_lotu = %s", (nowy_status, id_lotu))
-    conn.commit()
-    cur.close()
-    conn.close()
-    return RedirectResponse(url="/pracownik", status_code=status.HTTP_302_FOUND)
-    
-@router.post("/zmien_bramke/{id_lotu}")
-async def pracownik_zmien_bramke(id_lotu: int, nowa_bramka: str = Form(...)):
+async def pracownik_zmien_status(request: Request, id_lotu: int, nowy_status: str = Form(...)):
+    user = get_current_user(request)
+    if not user or user.get("rola") not in ["admin", "pracownik"]:
+        return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
+
     conn = get_db_connection()
     if conn:
-        cur = conn.cursor()
         try:
-            cur.execute("UPDATE Loty SET bramka = %s WHERE id_lotu = %s", (nowa_bramka, id_lotu))
+            cur = conn.cursor()
+            cur.execute("UPDATE Loty SET status = %s WHERE id_lotu = %s", (nowy_status, id_lotu))
             conn.commit()
+        except Exception as e:
+            print(f"Błąd zmiany statusu: {e}")
+            conn.rollback()
         finally:
             cur.close()
             conn.close()
+            
+    return RedirectResponse(url="/pracownik", status_code=status.HTTP_302_FOUND)
+    
+@router.post("/zmien_bramke/{id_lotu}")
+async def pracownik_zmien_bramke(request: Request, id_lotu: int, nowa_bramka: str = Form(...)):
+    user = get_current_user(request)
+    if not user or user.get("rola") not in ["admin", "pracownik"]:
+        return RedirectResponse(url="/logowanie", status_code=status.HTTP_302_FOUND)
+
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            cur.execute("UPDATE Loty SET bramka = %s WHERE id_lotu = %s", (nowa_bramka, id_lotu))
+            conn.commit()
+        except Exception as e:
+            print(f"Błąd zmiany bramki: {e}")
+            conn.rollback()
+        finally:
+            cur.close()
+            conn.close()
+            
     return RedirectResponse(url="/pracownik", status_code=status.HTTP_302_FOUND)
