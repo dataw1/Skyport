@@ -20,11 +20,12 @@ section { margin-bottom: 50px; }
 .wait-header p { color: #4a5568; margin-bottom: 20px; }
 .wait-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
 .wait-item {
     background: #fff;
+    justify-content: center;
     padding: 15px;
     border-radius: 4px;
     display: flex;
