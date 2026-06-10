@@ -19,9 +19,29 @@
         <div class="logo">
             <span class="icon">✈️</span> <a href="/">SkyPort</a>
         </div>
+        <nav class="nav-links">
+            <a href="/loty">Loty</a>
+            <a href="/parking">Parking</a>
+            <a href="/mapy">Mapy Terminali</a>
+            <a href="/bezpieczenstwo">Informacje o Bezpieczeństwie</a>
+        </nav>
         <div class="nav-actions">
-            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, Pracowniku!</span>
+            {% if user.rola == 'pasazer' %}
+                <a href="/moje-konto" class="btn-yellow" style="margin-right: 10px;">👤 Moje Konto</a>
+            {% endif %}
+            {% if user %}
+            <span style="color: #1a365d; font-weight: bold; margin-right: 15px;">Witaj, {{ user.imie }}!</span>
+            {% if user.rola == 'admin' %}
+            <a href="/admin" class="btn-yellow" style="margin-right: 10px;">⚙️ Panel Admina</a>
+            {% elif user.rola == 'pracownik' %}
+            <a href="/pracownik" class="btn-yellow" style="margin-right: 10px;">📋 Panel Pracownika</a>
+            {% endif %}
             <a href="/wyloguj" class="btn-outline">Wyloguj</a>
+            {% else %}
+            <a href="/logowanie" class="btn-outline">Logowanie</a>
+            {% endif %}
+            <button class="lang-btn">🌐 PL</button>
+            <a href="/pomoc" class="help-link">❓ Centrum Pomocy</a>
         </div>
     </header>
 
